@@ -5,10 +5,16 @@
 from modules.device_controller import dc
 from modules.sensor_controller import sc
 
+class Off:
+    display_name = "Off"
+    priority = 10
 
+    def cycle():
+        pass
 
 class KojiMode:
     display_name = "Koji"
+    priority = 30
 
     def cycle(self):
         ####################
@@ -67,7 +73,8 @@ class KojiMode:
             rc.turn_heater_on_off(False)
 
 class DryingMode:
-    name = "Drying"
+    display_name = "Drying"
+    priority = 60
 
     def cycle(self):
         unwanted_machines = [
@@ -101,14 +108,9 @@ class DryingMode:
             rc.turn_device_on_off("muro_vent", False)
             rc.turn_device_on_off("bed_vent", False)
 
-class Off:
-    display_name = "Off"
-
-    def cycle():
-        pass
-
 class Manual:
     display_name = "Manual"
-    
+    priority = 100
+
     def cycle():
         pass

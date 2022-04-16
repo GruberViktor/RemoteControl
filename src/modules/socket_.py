@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from .app import app
 from .device_controller import dc
 from . import mode_controller
-from . import sensor_controller
+from .sensor_controller import sc
 
 
 sio = SocketIO(
@@ -11,26 +11,23 @@ sio = SocketIO(
     cors_allowed_origins=[],
     async_mode="eventlet",
     ping_timeout=30,
-    logger=False,
-    engineio_logger=False,
+    logger=True,
+    engineio_logger=True,
 )
 
 controller = mode_controller.ControllerLoop()
 controller.start()
 
-@sio.on("connect")
-def on_connect(data):
-    return { # Dummy Data
-        "sensors": [
-            {"id": "sensor1",
-            "unit": "°C",
-            "display_name": "Muro"
-            }
-        ],
-        "modes": [mode.__name__ for mode in controller.modes],
+
+@sio.event
+def connect(sid):
+    data = { # Dummy Data
+        "sensors": sc.sensor_list,
+        "modes": controller.modes_repr,
         "devices": dc.device_statuses,
         "settings":  []
     }
+    sio.emit('init', data, room=sid)
 
 
 @sio.on("mode_change")

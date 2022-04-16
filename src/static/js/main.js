@@ -1,14 +1,22 @@
 var socket = io();
-var Mustache = require('mustache');
 
 function renderTemplate(template_name, data) {
     var template = document.getElementById(template_name).innerHTML;
     var rendered = Mustache.render(template, data);
     return rendered;
-  }
+}
 
-socket.on("connect", (data) => {
+socket.on("init", (data, callback) => {
+    console.log(data['sensors']);
+    // Render modes
+    document.getElementById('mode_container').innerHTML = '';
+    data['modes'].forEach(mode => {
+        html = renderTemplate('mode_template', mode);
+        document.getElementById('mode_container').innerHTML += html;
+    })
+
     // Render sensors
+    document.getElementById('sensor_data').innerHTML = '';
     data['sensors'].forEach(sensor => {
         html = renderTemplate('sensor_template', sensor)
         document.getElementById('sensor_data').innerHTML += html;
@@ -28,7 +36,7 @@ socket.on("state_update", (data, callback) => {
         if (!elem) { continue; }
         elem.checked = state;
     }
-    
+
     for (const [setting, value] of Object.entries(data["koji_settings"])) {
         const elem = document.getElementById(setting);
         if (!elem || elem === focused) { continue; }
@@ -38,7 +46,7 @@ socket.on("state_update", (data, callback) => {
     for (const [setting, value] of Object.entries(data["misc"])) {
         const elem = document.getElementById(setting);
         if (!elem) { continue; }
-        if (elem.type == "checkbox"){
+        if (elem.type == "checkbox") {
             elem.checked = value;
         } else {
             elem.value = value;
@@ -80,14 +88,14 @@ function toggle_device(device) {
 function target_temp_change() {
     target_temp = parseFloat(document.getElementById('target_temp').value);
     socket.emit('target_temp_change', target_temp);
-    
+
     // const koji_max_temp_input = document.getElementById("koji_max_temp");
     // koji_max_temp_input.min = target_temp
     // if (target_temp > koji_max_temp_input.value) {
     //     koji_max_temp_input.value = target_temp;
     //     koji_max_temp_change();
     // }
-    
+
     // koji_min_temp_input = document.getElementById("koji_min_temp")
     // koji_min_temp_input.min = target_temp + 2
     // if (target_temp > koji_min_temp + 2) {

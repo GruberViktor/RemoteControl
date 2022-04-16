@@ -13,6 +13,8 @@ influxdb = "*"
 adafruit-circuitpython-ds3502 = "*"
 dotmap = "*"
 flask-socketio = "*"
+pyscss = "*"
+jsmin = "*"
 
 [dev-packages]
 

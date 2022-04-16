@@ -13,11 +13,32 @@
     {% endassets %}
 
     <script id="sensor_template" type="x-tmpl-mustache">
+        {% raw %}
         <div class="block">
             <div class="number_display" id="{{ id }}">-</div>
             <div class="number_display unit"> {{ unit }}</div>
             <div>{{ display_name }}</div>
         </div>
+        {% endraw %}
+    </script>
+    <script id="machine_template" type="x-tmpl-mustache">
+        {% raw %}
+        <div class="machine">
+            <label for="{{ id }}" class="switch">
+                <input id="{{ id }}" type="checkbox" onclick="toggle_device('{{ id }}')">
+                <div class="slider round"></div>
+            </label>
+            <span>{{ display_name }}</span>
+        </div>
+        {% endraw %}
+    </script>
+    <script id="mode_template" type="x-tmpl-mustache">
+        {% raw %}
+        <label for="{{ id }}">
+            <input type="radio" name="muro_mode" class="mode_button" id="{{ mode['id'] }}" onclick="mode_change('{{ mode['id'] }}')">
+            <span>{{ name }}</span>
+        </label>
+        {% endraw %}
     </script>
 </head>
 
@@ -30,27 +51,7 @@
         <div id="sensor_data" class="sensor_data">
         </div>
 
-        <div class="switchbuttons block">
-            <label for="mode_off">
-                <input type="radio" name="muro_mode" class="mode_button" id="mode_off" onclick="mode_change('off')">
-                <span>Aus</span>
-            </label>
-
-            <label for="mode_koji">
-                <input type="radio" name="muro_mode" class="mode_button" id="mode_koji" onclick="mode_change('koji')">
-                <span>Kojimodus</span>
-            </label>
-
-            <label for="mode_drying">
-                <input type="radio" name="muro_mode" class="mode_button" id="mode_drying"
-                    onclick="mode_change('drying')">
-                <span>Trockenmodus</span>
-            </label>
-            <label for="mode_manual">
-                <input type="radio" name="muro_mode" class="mode_button" id="mode_manual"
-                    onclick="mode_change('manual')">
-                <span>Manuell</span>
-            </label>
+        <div id="mode_container" class="switchbuttons block">
         </div>
 
         <div class="container">
@@ -85,15 +86,6 @@
             </div> -->
 
             <div class="machine_container">
-                <!-- {% for id, machine in machines.items() %}
-                <div class="machine">
-                    <label for="{{ id }}" class="switch">
-                        <input id="{{ id }}" type="checkbox" onclick="toggle_device('{{ id }}')">
-                        <div class="slider round"></div>
-                    </label>
-                    <span>{{ machine["display_name"] }}</span>
-                </div>
-                {% endfor %} -->
             </div>
         </div>
 

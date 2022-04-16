@@ -21,7 +21,7 @@ class Device:
             self.gpio_pin = gpio_pin
         elif type(gpio_pin) == int:
             self.gpio_pin = [gpio_pin]
-        self.name = name
+        self.name = str(name)
         self.status = False
 
     def turn_device_on_off(self, on: bool):
@@ -71,7 +71,7 @@ class DeviceController:
             d.turn_off()
 
     @property
-    def device_statuses():
-        return {dev: dev.status for dev in self.devices}
+    def device_statuses(self):
+        return {dev.name: dev.status for dev in self.devices}
 
 dc = DeviceController()

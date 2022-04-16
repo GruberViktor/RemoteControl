@@ -20,6 +20,8 @@ class ControllerLoop(threading.Thread):
         threading.Thread.__init__(self)
         self.settings = {}
         self.modes = [obj for name, obj in inspect.getmembers(modes) if inspect.isclass(obj)]
+        self.modes_repr = [{'id': mode.__name__, 'name': mode.display_name, 'priority': mode.priority} for mode in self.modes]
+        self.modes_repr = sorted(self.modes_repr, key=lambda d: d['priority'])
 
     def run(self):
         self.current_mode = settings.settings.get("current_mode")
