@@ -4,10 +4,11 @@ import flask_login
 
 from .config import config
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, template_folder='../templates')
 app._static_folder = os.path.abspath("static/")
 app.secret_key = config["FLASK"]["secret_key"]
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -15,6 +16,7 @@ login_manager.init_app(app)
 # Mock database.
 users = {config["CREDENTIALS"]["user"]: {"pw": config["CREDENTIALS"]["password"]}}
 
+print(os.getcwd())
 
 class User(flask_login.UserMixin):
     pass
@@ -71,7 +73,7 @@ def login():
 @app.route("/logout")
 def logout():
     flask_login.logout_user()
-    return flask.redirect("/login")
+    return flask.redirect("login")
 
 
 @app.route("/")
