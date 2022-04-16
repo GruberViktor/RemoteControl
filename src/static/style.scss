@@ -1,0 +1,280 @@
+$background_light: #343C3F;
+$background_dark: #2d3436;
+
+
+body {
+    background-image: url('/static/img/hintergrund.jpg');
+    background-repeat: repeat;
+
+    font-family: Raleway;
+    font-weight: 400;
+    font-size: 1.2em;
+    color: white;
+
+    &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: -99;
+        background: linear-gradient(50deg, rgba(34, 192, 195, 0.2) 0%, rgba(253, 187, 45, 0.2) 100%);
+        background-blend-mode: multiply;
+    }
+}
+
+a {
+    color: #B4EAE4;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="submit"],
+input[type="number"] {
+    background-color: $background_dark;
+    border: 1px solid rgba(180, 234, 228, 0.85);
+    color: white;
+    line-height: 1.4em;
+    font-size: 1.2em;
+    padding: 1em;
+    background: $background_light;
+    border-radius: 0.5em;
+    min-width: 6em;
+    margin: 0.5em;
+}
+
+input[type="submit"]:hover {
+    border: 1px solid #b4eae4;
+}
+
+.main_container {
+    border: 2px solid rgba(180, 234, 228, 0.1);
+    max-width: 65em;
+    width: fit-content;
+    margin: 1em auto;
+    padding: 1em;
+    box-shadow: 0 0 2em 0 rgba(0, 0, 0, 0.4);
+    border-radius: 0.5em;
+    background: $background_dark;
+
+}
+
+@media screen and (max-width: 790px) {
+    .main_container {
+        width: 20em;
+    }
+}
+
+.login {
+    width: auto;
+    margin-top: 2em;
+
+    form {
+        text-align: center;
+    }
+}
+
+.logo_title {
+    display: table;
+    height: 6em;
+    text-align: center;
+
+    span {
+        display: table-cell;
+        vertical-align: middle;
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+
+    img {
+        display: table-cell;
+        vertical-align: middle;
+        height: 4em;
+        margin: 1em 1em 0em 1em;
+    }
+}
+
+
+.sensor_data {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: fit-content;
+    margin: 1em auto;
+    text-align: center;
+
+    .block {
+        padding: 1em;
+        background: $background_light;
+        border-radius: 0.5em;
+        min-width: 6em;
+        margin: 0.5em 0.5em 0 0.5em;
+    }
+}
+
+
+.number_display {
+    display: inline-block;
+    font-size: 2em;
+    font-weight: 800;
+}
+
+
+.container {
+    margin-top: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.setting_container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 45%;
+    height: fit-content;
+    justify-content: space-between;
+    align-content: flex-start;
+    background: $background_light;
+    border-radius: 0.5em;
+    margin: 0.5em;
+
+    .setting {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        padding: 1em;
+
+        width: 12em;
+    }
+}
+
+.machine_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: $background_light;
+    border-radius: 0.5em;
+    margin: 0.5em;
+
+    .machine {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 1em;
+        width: 12em;
+
+        span {
+            margin-left: 1em;
+        }
+    }
+}
+
+input[type="radio"] {
+    appearance: none;
+    background-color: #fff;
+    margin: 0;
+
+}
+
+.switchbuttons {
+    width: fit-content;
+    margin: auto;
+    background-color: $background_light;
+    border-radius: 0.5em;
+    text-align: center;
+
+    label span {
+        display: inline-block;
+        font-size: 1.5em;
+        padding: 0.5em;
+        margin: 0.5em;
+        border: 1px solid rgba(180, 234, 228, 0.5);
+        border-radius: 0.2em;
+        cursor: pointer;
+    }
+
+    input:checked+span {
+        border: 2px solid rgba(180, 234, 228, 0.9);
+        background-color: lighten($background_light, 10%);
+        box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, 0.44);
+    }
+}
+
+
+.switch {
+    display: inline-block;
+    height: 1.2em;
+    position: relative;
+    width: 2.4em;
+    min-width: 2.4em;
+    transition: 0.4s;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #aaa;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 0.2em;
+    content: "";
+    height: 0.8em;
+    width: 0.8em;
+    left: 0.2em;
+    position: absolute;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #66bb6a;
+    background-color: #57df5e;
+}
+
+input:checked+.slider:before {
+    transform: translateX(1.2em);
+}
+
+input:disabled+.slider {
+    cursor: default;
+}
+
+.switch.disabled {
+    width: 1.2em;
+    min-width: 1.2em;
+
+    .slider:before {
+        background-color: transparent;
+    }
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+
+
+
+.logout {
+    margin-top: 1em;
+    text-align: center;
+}

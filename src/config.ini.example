@@ -1,0 +1,37 @@
+[CREDENTIALS]
+user = admin 
+password = admin
+
+[FLASK]
+secret_key = lkjh12öypeu23cb # Smash your keyboard here, this is used as a salt to sign cookies.
+
+
+[INFLUXDB]
+enabled = no # Set this to True if you would like to store your measurements in an influx database. (The values can then be nicely viewed with Grafana, highly recommended)
+host = 0.0.0.0
+port = 8086
+user = 
+password = 
+database = muro
+measurement = muro_data # This will be the "top folder" of how the data will be stored in influxdb. In Grafana you can then select "muro_data" and the single fields will be listed in there.
+ssl = yes # Set this to no if your influx instance is running locally
+verify_ssl = yes # Set this to yes if you have proper https for your influxdb
+
+[TEMPERATURE_SENSORS] 
+# This is assuming that you are using the typical DS18B20 Sensors.
+# Enter the GPIO Number (not the physical pin number) here.
+# Multiple sensors can be attached to one pin, the average value will then be calculated.
+# *IMPORTANT*: In the /boot/config.txt file, you will need to enter the one-wire interface in an ascending order, i.e. like this:
+# dtoverlay=w1-gpio,gpiopin=20
+# dtoverlay=w1-gpio,gpiopin=21
+# Do not define more w1 overlays than you will be using, otherwise this won't work.
+
+muro = {"GPIO": 20, "name": "Muro"}
+koji = {"GPIO": 21, "name": "Koji"}
+
+[DEVICES]
+# Here you can define your devices. 
+# Multiple pins can be supplied as a list, if you need to combine two relays for one device.
+# Follow this pattern: 
+heater = {"pin": [22,24], "name": "Heater"}
+muro_vent = {"pin": 18, "name": "Muro Ventilator"}
