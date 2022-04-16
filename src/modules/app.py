@@ -2,9 +2,7 @@ import os
 import flask
 import flask_login
 
-from config import config
-from relais_controller import machines
-
+from .config import config
 
 app = flask.Flask(__name__)
 app._static_folder = os.path.abspath("static/")
@@ -79,7 +77,7 @@ def logout():
 @app.route("/")
 @flask_login.login_required
 def index():
-    return flask.render_template("main.html", machines=machines)
+    return flask.render_template("main.html")
 
 
 @app.route("/static/<path:filename>")

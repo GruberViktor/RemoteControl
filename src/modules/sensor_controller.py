@@ -3,12 +3,12 @@ import glob
 import re
 from dotmap import DotMap
 
-import config
+from .config import config
 
 
 class SensorController:
     def __init__(self):
-        sensor_config = config.config["TEMPERATURE_SENSORS"]
+        sensor_config = config["TEMPERATURE_SENSORS"]
         sensor_list = []
         for key, value in sensor_config.items():
             value = eval(value)

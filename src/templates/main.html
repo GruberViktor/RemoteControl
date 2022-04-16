@@ -3,7 +3,7 @@
 
 <head>
     <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
-    
+
     {% assets 'js_all' %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}
@@ -63,7 +63,7 @@
                 <div class="setting">
                     <label for="koji_max_temp">Maximale Koji Temperatur</label>
                     <input id="koji_max_temp" name="koji_max_temp" type="number" min="20" step="0.5" max="40" value="35"
-                    onchange="koji_max_temp_change()" />
+                        onchange="koji_max_temp_change()" />
                 </div>
                 <div class="setting">
                     <label for="koji_min_temp">Ziel Koji Temperatur</label>
@@ -85,7 +85,7 @@
             </div> -->
 
             <div class="machine_container">
-                {% for id, machine in machines.items() %}
+                <!-- {% for id, machine in machines.items() %}
                 <div class="machine">
                     <label for="{{ id }}" class="switch">
                         <input id="{{ id }}" type="checkbox" onclick="toggle_device('{{ id }}')">
@@ -93,7 +93,7 @@
                     </label>
                     <span>{{ machine["display_name"] }}</span>
                 </div>
-                {% endfor %}
+                {% endfor %} -->
             </div>
         </div>
 

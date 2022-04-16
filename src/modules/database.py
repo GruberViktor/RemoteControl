@@ -2,13 +2,13 @@ import influxdb
 from datetime import datetime
 import urllib3
 
-from config import config
+from .config import config
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 conf = config['INFLUXDB']
 
-if conf.get(host, False):
+if conf.get("host", False):
     client = influxdb.InfluxDBClient(
         host=conf['host'],
         port=conf['port'],

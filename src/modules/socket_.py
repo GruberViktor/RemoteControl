@@ -1,12 +1,10 @@
 from flask_socketio import SocketIO
 
-from app import app
-from device_controller import dc
-import mode_controller
-import sensor_controller
+from .app import app
+from .device_controller import dc
+from . import mode_controller
+from . import sensor_controller
 
-controller = mode_controller.ControllerLoop()
-controller.start()
 
 sio = SocketIO(
     app,
@@ -17,6 +15,8 @@ sio = SocketIO(
     engineio_logger=False,
 )
 
+controller = mode_controller.ControllerLoop()
+controller.start()
 
 @sio.on("connect")
 def on_connect(data):

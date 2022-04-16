@@ -2,8 +2,10 @@ import RPi.GPIO as GPIO
 import json
 import adafruit_ds3502
 
-import config
+from .config import config
 
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(23, GPIO.IN)
 
 class Device:
     """
@@ -53,8 +55,10 @@ class DeviceController:
         GPIO.setup(23, GPIO.IN)
 
         devices = []
-        for id, device in config.items('DEVICES'):
-            devices.append(json.loads(device))
+        for _id, device in config.items('DEVICES'):
+            d = json.loads(device[:-1])
+            d['id'] = _id
+            devices.append(d)
 
         self.devices = []
         for d in devices:
