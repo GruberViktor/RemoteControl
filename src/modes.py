@@ -3,6 +3,7 @@
 ###################################################
 
 from modules.device_controller import dc
+from modules.sensor_controller import sc
 
 
 

@@ -3,6 +3,7 @@ from flask_socketio import SocketIO
 from app import app
 from device_controller import dc
 import mode_controller
+import sensor_controller
 
 controller = mode_controller.ControllerLoop()
 controller.start()

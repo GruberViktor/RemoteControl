@@ -7,7 +7,7 @@ import config
 
 
 class SensorController:
-    def __init__():
+    def __init__(self):
         sensor_config = config.config["TEMPERATURE_SENSORS"]
         sensor_list = []
         for key, value in sensor_config.items():
@@ -18,10 +18,10 @@ class SensorController:
         
         self.sensors = DotMap()
         for sensor in self.sensor_list:
-            self.sensors.sensor['id'] = DotMap({"value": False, "unit": "°C"})
+            self.sensors[sensor['id']] = DotMap({"value": False, "unit": "°C"})
 
         
-    def read_sensors():
+    def read_sensors(self):
         i = 1
         for sensor in self.sensor_list:
             path = f"/sys/bus/w1/devices/w1_bus_master{i}/28-*/w1_slave"
@@ -41,3 +41,7 @@ class SensorController:
             self.sensors[sensor['id']].value = avg
             i += 1
 
+    def get_sensor_dict(self):
+        return self.sensors.toDict()
+
+sc = SensorController()
