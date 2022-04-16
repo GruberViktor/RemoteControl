@@ -4,25 +4,26 @@ import re
 from decimal import Decimal as d
 import datetime
 import threading
+import inspect
 
 import settings
 import device_controller
 import database
 import socket_
 from app import app
+from .. import modes
 
 
 class ControllerLoop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.settings = {}
+        self.modes = [obj for name, obj in inspect.getmembers(modes) if inspect.isclass(obj)]
 
     def run(self):
-        # initialize sensor values
-        self.modes = ["off", "koji", "drying", "manual"]
         self.current_mode = settings.settings.get("current_mode")
         if self.current_mode == None:
-            self.change_mode("off")
+            self.change_mode("Off")
 
         # Start Loop
         self.controller_loop()
@@ -42,22 +43,7 @@ class ControllerLoop(threading.Thread):
             data["muro_vent"] = 100 if rc.machine_status["muro_vent"] else 0
 
             # Run Cycle
-            if self.current_mode == "off":
-                self.currently_cooling_muro = False
-                self.bed_vent_just_stopped = False
-                rc.turn_all_devices_off()
-            elif self.current_mode == "koji":
-                try:
-                    self.koji_cycle()
-                except KeyError:  # What was that for?
-                    pass
-            elif self.current_mode == "drying":
-                try:
-                    self.drying_cycle()
-                except KeyError:  # Same
-                    pass
-            elif self.current_mode == "manual":
-                pass
+            self.current_mode.cycle()
 
             # Emit data to clients
             socket_.emit_state(data)
@@ -74,8 +60,11 @@ class ControllerLoop(threading.Thread):
             time.sleep(1)
 
     def change_mode(self, mode):
-        self.current_mode = mode
-        settings.update("current_mode", mode)
+        if type(mode) == str:
+            self.current_mode = getattr(sys.modules[modes], mode)
+        else:
+            self.current_mode = mode
+        settings.update("current_mode", mode.__name__)
 
     def read_sensor_values(self):
         try:
@@ -119,4 +108,3 @@ class ControllerLoop(threading.Thread):
             "muro_temp": f"{round(self.muro_temp, 1):.1f}",
             "muro_humidity": f"{round(self.muro_humidity, 1):.1f}",
         }
-

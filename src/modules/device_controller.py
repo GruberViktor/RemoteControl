@@ -67,7 +67,7 @@ class DeviceController:
             d.turn_off()
 
     @property
-    def device_status():
+    def device_statuses():
         return {dev: dev.status for dev in self.devices}
 
 dc = DeviceController()

@@ -26,8 +26,8 @@ def on_connect(data):
             "display_name": "Muro"
             }
         ],
-        "modes": [],
-        "devices": [],
+        "modes": [mode.__name__ for mode in controller.modes],
+        "devices": dc.device_statuses,
         "settings":  []
     }
 
@@ -59,7 +59,7 @@ def emit_state(sensor_data):
         data = {
             "sensor_data": sensor_data,
             "device_data": dc.machine_status,
-            "settings": controller.koji_settings,
+            # "settings": controller.koji_settings,
             "current_mode": controller.current_mode,
         }
         sio.emit("state_update", data)

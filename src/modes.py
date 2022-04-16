@@ -4,11 +4,10 @@
 
 from modules.device_controller import dc
 
-s = {} # Short for Sensor
 
 
-class koji_mode:
-    name = "Koji"
+class KojiMode:
+    display_name = "Koji"
 
     def cycle(self):
         ####################
@@ -66,7 +65,7 @@ class koji_mode:
         elif on_off == False:
             rc.turn_heater_on_off(False)
 
-class drying_mode:
+class DryingMode:
     name = "Drying"
 
     def cycle(self):
@@ -100,3 +99,15 @@ class drying_mode:
             rc.turn_device_on_off("dehumidifier", False)
             rc.turn_device_on_off("muro_vent", False)
             rc.turn_device_on_off("bed_vent", False)
+
+class Off:
+    display_name = "Off"
+
+    def cycle():
+        pass
+
+class Manual:
+    display_name = "Manual"
+    
+    def cycle():
+        pass
