@@ -358,13 +358,13 @@ else{return undefined;}};var mustache={name:'mustache.js',version:'4.2.0',tags:[
 'but "'+typeStr(template)+'" was given as the first '+
 'argument for mustache#render(template, view, partials)');}
 return defaultWriter.render(template,view,partials,config);};mustache.escape=escapeHtml;mustache.Scanner=Scanner;mustache.Context=Context;mustache.Writer=Writer;return mustache;})));(async()=>{let permission=await Notification.requestPermission();})();var socket=io();function renderTemplate(template_name,data){var template=document.getElementById(template_name).innerHTML;var rendered=Mustache.render(template,data);return rendered;}
-socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;})
-document.getElementById('sensor_data').innerHTML='';data['sensors'].forEach(sensor=>{html=renderTemplate('sensor_template',sensor)
-document.getElementById('sensor_data').innerHTML+=html;});})
+socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;});document.getElementById('sensor_container').innerHTML='';data['sensors'].forEach(sensor=>{html=renderTemplate('sensor_template',sensor)
+document.getElementById('sensor_container').innerHTML+=html;});document.getElementById('device_container').innerHTML='';console.log(data["devices"]);data['devices'].forEach(device=>{html=renderTemplate('device_template',device)
+document.getElementById('device_container').innerHTML+=html;});})
 socket.on("state_update",(state,callback)=>{const focused=document.activeElement;for(const[sensor,data]of Object.entries(state["sensor_data"])){const elem=document.getElementById(sensor+'_value');if(!elem){continue;}
 elem.innerHTML=data['value'];}
-})
-function mode_change(mode){socket.emit('mode_change',mode,(success)=>{if(success){console.log("Successfully changed mode");}});}
+document.getElementById("mode_"+state["current_mode"]).checked=true;const devices=document.querySelectorAll(".device input");if(state["current_mode"]!="Manual"){for(var i=0;i<devices.length;i++){devices[i].disabled=true;devices[i].parentElement.classList.add("disabled");}}else{for(var i=0;i<devices.length;i++){devices[i].disabled=false;devices[i].parentElement.classList.remove("disabled");}}})
+function mode_change(mode){console.log(mode);socket.emit('mode_change',mode,(success)=>{if(success){console.log("Successfully changed mode");}});}
 function toggle_device(device){socket.emit('device_toggled',device,(status)=>{document.getElementById(device).checked=status;});}
 function target_temp_change(){target_temp=parseFloat(document.getElementById('target_temp').value);socket.emit('target_temp_change',target_temp);}
 socket.on("target_temp_change",(target_temp)=>{document.getElementById("target_temp").value=target_temp;})

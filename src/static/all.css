@@ -116,20 +116,20 @@ a {
         padding: 1em;
         width: 12em; }
 
-.machine_container {
+.device_container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: #343C3F;
   border-radius: 0.5em;
   margin: 0.5em; }
-  .machine_container .machine {
+  .device_container .device {
     display: flex;
     flex-direction: row;
     align-items: center;
     padding: 1em;
     width: 12em; }
-    .machine_container .machine span {
+    .device_container .device span {
       margin-left: 1em; }
 
 input[type="radio"] {

@@ -5,72 +5,86 @@
 from modules.device_controller import dc
 from modules.sensor_controller import sc
 
+try:
+    import custom_modes
+except ImportError:
+    pass
+
 class Off:
     display_name = "Off"
     priority = 10
 
-    def cycle():
+    def cycle(self):
         pass
+
+class Manual:
+    display_name = "Manual"
+    priority = 100
+
+    def cycle(self):
+        pass
+
 
 class KojiMode:
     display_name = "Koji"
     priority = 30
 
     def cycle(self):
+        pass
         ####################
         ### Muro Heizung ###
         
         ## Über Idealbande ###
-        if self.muro_temp >= self.target_temp + self.hys_temp:
-            self.turn_heater_on_off(False)
-            rc.turn_device_on_off("muro_vent", True)
-        ## Im Ideal ###
-        elif self.target_temp + self.hys_temp > self.muro_temp > self.target_temp - self.hys_temp:
-            if any([rc.machine_status["heater1"], rc.machine_status["heater2"]]):
-                # Heizung läuft
-                self.turn_heater_on_off(True)
-            else:  # Heizung läuft nicht
-                self.turn_heater_on_off(False)
-        ### Unter Idealbande ###
-        elif self.muro_temp <= self.target_temp - self.hys_temp:
-            self.turn_heater_on_off(True)
-            rc.turn_device_on_off("muro_vent", False)
+    #     if self.muro_temp >= self.target_temp + self.hys_temp:
+    #         self.turn_heater_on_off(False)
+    #         rc.turn_device_on_off("muro_vent", True)
+    #     ## Im Ideal ###
+    #     elif self.target_temp + self.hys_temp > self.muro_temp > self.target_temp - self.hys_temp:
+    #         if any([rc.machine_status["heater1"], rc.machine_status["heater2"]]):
+    #             # Heizung läuft
+    #             self.turn_heater_on_off(True)
+    #         else:  # Heizung läuft nicht
+    #             self.turn_heater_on_off(False)
+    #     ### Unter Idealbande ###
+    #     elif self.muro_temp <= self.target_temp - self.hys_temp:
+    #         self.turn_heater_on_off(True)
+    #         rc.turn_device_on_off("muro_vent", False)
 
-        #######################
-        ### Koji Temperatur ###
+    #     #######################
+    #     ### Koji Temperatur ###
         
-        # Koji ist über der maximalen Temperatur
-        if self.koji_temp >= self.koji_max_temp:
-            rc.turn_device_on_off("bed_vent", True)
-        elif self.koji_min_temp < self.koji_temp < self.koji_max_temp:
-            pass
-        elif self.koji_temp <= self.koji_min_temp:
-            rc.turn_device_on_off("bed_vent", False)
-            self.bed_vent_just_stopped = True
+    #     # Koji ist über der maximalen Temperatur
+    #     if self.koji_temp >= self.koji_max_temp:
+    #         rc.turn_device_on_off("bed_vent", True)
+    #     elif self.koji_min_temp < self.koji_temp < self.koji_max_temp:
+    #         pass
+    #     elif self.koji_temp <= self.koji_min_temp:
+    #         rc.turn_device_on_off("bed_vent", False)
+    #         self.bed_vent_just_stopped = True
 
-        ########################
-        ### Luftfeuchtigkeit ###
+    #     ########################
+    #     ### Luftfeuchtigkeit ###
         
-        rc.check_water_sensor()
-        if not self.currently_cooling_muro:
-            if not self.muro_humidity == 0:
-                # Damit das Relais nicht unnötig schaltet bei einem Lesefehler.
+    #     rc.check_water_sensor()
+    #     if not self.currently_cooling_muro:
+    #         if not self.muro_humidity == 0:
+    #             # Damit das Relais nicht unnötig schaltet bei einem Lesefehler.
 
-                if self.muro_humidity >= self.target_hum:
-                    rc.turn_humidifier_on_off(False)
-                elif self.target_hum > self.muro_humidity > self.target_hum - self.hys_hum:
-                    pass
-                elif self.muro_humidity < self.target_hum - self.hys_hum:
-                    rc.turn_humidifier_on_off(True)
-        else:
-            rc.turn_humidifier_on_off(False)
+    #             if self.muro_humidity >= self.target_hum:
+    #                 rc.turn_humidifier_on_off(False)
+    #             elif self.target_hum > self.muro_humidity > self.target_hum - self.hys_hum:
+    #                 pass
+    #             elif self.muro_humidity < self.target_hum - self.hys_hum:
+    #                 rc.turn_humidifier_on_off(True)
+    #     else:
+    #         rc.turn_humidifier_on_off(False)
 
-    def turn_heater_on_off(self, on_off):
-        if on_off == True:
-            if not self.heater_lock:
-                rc.turn_heater_on_off(True)
-        elif on_off == False:
-            rc.turn_heater_on_off(False)
+    # def turn_heater_on_off(self, on_off):
+    #     if on_off == True:
+    #         if not self.heater_lock:
+    #             rc.turn_heater_on_off(True)
+    #     elif on_off == False:
+    #         rc.turn_heater_on_off(False)
 
 class DryingMode:
     display_name = "Drying"
@@ -108,9 +122,3 @@ class DryingMode:
             rc.turn_device_on_off("muro_vent", False)
             rc.turn_device_on_off("bed_vent", False)
 
-class Manual:
-    display_name = "Manual"
-    priority = 100
-
-    def cycle():
-        pass

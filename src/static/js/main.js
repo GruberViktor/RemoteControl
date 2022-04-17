@@ -12,14 +12,23 @@ socket.on("init", (data, callback) => {
     data['modes'].forEach(mode => {
         html = renderTemplate('mode_template', mode);
         document.getElementById('mode_container').innerHTML += html;
-    })
+    });
 
     // Render sensors
-    document.getElementById('sensor_data').innerHTML = '';
+    document.getElementById('sensor_container').innerHTML = '';
     data['sensors'].forEach(sensor => {
         html = renderTemplate('sensor_template', sensor)
-        document.getElementById('sensor_data').innerHTML += html;
+        document.getElementById('sensor_container').innerHTML += html;
     });
+
+    // Render devices
+    document.getElementById('device_container').innerHTML = '';
+    console.log(data["devices"]);
+    data['devices'].forEach(device => {
+        html = renderTemplate('device_template', device)
+        document.getElementById('device_container').innerHTML += html;
+    });
+
 })
 
 socket.on("state_update", (state, callback) => {
@@ -53,24 +62,25 @@ socket.on("state_update", (state, callback) => {
 
     // }
 
-    // document.getElementById("mode_" + data["current_mode"]).checked = true;
-    // const machines = document.querySelectorAll(".machine input");
-    // if (data["current_mode"] != "manual") {
-    //     for (var i = 0; i < machines.length; i++) {
-    //         machines[i].disabled = true;
-    //         machines[i].parentElement.classList.add("disabled");
-    //     }
-    // } else {
-    //     for (var i = 0; i < machines.length; i++) {
-    //         machines[i].disabled = false;
-    //         machines[i].parentElement.classList.remove("disabled");
-    //     }
-    // }
+    document.getElementById("mode_" + state["current_mode"]).checked = true;
+    const devices = document.querySelectorAll(".device input");
+    if (state["current_mode"] != "Manual") {
+        for (var i = 0; i < devices.length; i++) {
+            devices[i].disabled = true;
+            devices[i].parentElement.classList.add("disabled");
+        }
+    } else {
+        for (var i = 0; i < devices.length; i++) {
+            devices[i].disabled = false;
+            devices[i].parentElement.classList.remove("disabled");
+        }
+    }
 
 
 })
 
 function mode_change(mode) {
+    console.log(mode);
     socket.emit('mode_change', mode, (success) => {
         if (success) {
             console.log("Successfully changed mode");

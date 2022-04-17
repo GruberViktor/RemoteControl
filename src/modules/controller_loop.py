@@ -30,7 +30,7 @@ def connect(sid):
     data = { # Dummy Data
         "sensors": sc.sensor_list,
         "modes": cl.modes_repr,
-        "devices": dc.device_statuses,
+        "devices": dc.device_list,
         "settings":  []
     }
     sio.emit('init', data, room=sid)
@@ -53,6 +53,16 @@ def on_device_toggled(device):
     data = {device: status}
     sio.emit("device_toggled_new_status", data, broadcast=True, include_self=False)
     return status
+
+def emit_state():
+    print("emit")
+    data = {
+        "sensor_data": sc.sensor_data,
+        "device_data": dc.device_statuses,
+        # "settings": controller.koji_settings,
+        "current_mode": cl.current_mode.__class__.__name__,
+    }
+    sio.emit("state_update", data)
 
 
 class ControllerLoop(threading.Thread):
@@ -77,9 +87,7 @@ class ControllerLoop(threading.Thread):
         db_write_i = 0
         while True:
             # Gather data
-            t1 = time.time()
             sc.read_sensors()
-            print(f"reading sensors took {time.time()-t1} seconds")
 
             # Run Cycle
             self.current_mode.cycle()
@@ -100,10 +108,10 @@ class ControllerLoop(threading.Thread):
 
     def change_mode(self, mode):
         if type(mode) == str:
-            self.current_mode = getattr(sys.modules['modes'], mode)
+            self.current_mode = getattr(sys.modules['modes'], mode)()
         else:
-            self.current_mode = mode
-        settings.update("current_mode", self.current_mode.__name__)
+            self.current_mode = mode()
+        settings.update("current_mode", self.current_mode.__class__.__name__)
 
     # def read_sensor_values(self):
     #     try:
@@ -148,14 +156,6 @@ class ControllerLoop(threading.Thread):
     #         "muro_humidity": f"{round(self.muro_humidity, 1):.1f}",
     #     }
 
-def emit_state():
-    data = {
-        "sensor_data": sc.sensor_data,
-        "device_data": dc.device_statuses,
-        # "settings": controller.koji_settings,
-        "current_mode": cl.current_mode.__name__,
-    }
-    sio.emit("state_update", data)
 
 
 cl = ControllerLoop()

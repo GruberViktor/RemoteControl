@@ -62,7 +62,7 @@ class DeviceController:
 
         self.devices = []
         for d in devices:
-            device = Device(d["id"], d["name"], d["pin"])
+            device = Device(d["id"], d["pin"], d["name"])
             setattr(self, d["id"], device)
             self.devices.append(device)
 
@@ -73,5 +73,9 @@ class DeviceController:
     @property
     def device_statuses(self):
         return {dev.name: dev.status for dev in self.devices}
+    
+    @property
+    def device_list(self):
+        return [{'id': dev.id, 'name': dev.name} for dev in self.devices]
 
 dc = DeviceController()

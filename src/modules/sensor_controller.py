@@ -1,6 +1,7 @@
 import os
 import glob
 import re
+import time
 from dotmap import DotMap
 
 from .config import config
@@ -20,7 +21,6 @@ class SensorController:
         self.sensors = DotMap()
         for sensor in self.sensor_list:
             self.sensors[sensor['id']] = DotMap({"value": False, "unit": "°C"})
-
         
     def read_sensors(self):
         i = 1
@@ -31,7 +31,10 @@ class SensorController:
             values = []
             for path in sensor_paths:
                 with open(path) as f:
-                    value = re.search(r'(?<=t\=)\d*', f.read())
+                    content = f.read() 
+                    # For some reason this is slow as shit compared to reading the value through a RPI Pico.
+                    # Maybe because of a bad SD card. 
+                    value = re.search(r'(?<=t\=)\d*', content)
                     if value:
                         values.append(float(value.group())/1000)
             if len(values) > 0:

@@ -153,7 +153,7 @@ input[type="submit"]:hover {
     }
 }
 
-.machine_container {
+.device_container {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -161,7 +161,7 @@ input[type="submit"]:hover {
     border-radius: 0.5em;
     margin: 0.5em;
 
-    .machine {
+    .device {
         display: flex;
         flex-direction: row;
         align-items: center;

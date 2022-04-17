@@ -23,20 +23,20 @@
     </script>
     <script id="mode_template" type="x-tmpl-mustache">
         {% raw %}
-        <label for="{{ id }}">
-            <input type="radio" name="muro_mode" class="mode_button" id="{{ id }}" onclick="mode_change('{{ id }}')">
+        <label for="mode_{{ id }}">
+            <input type="radio" name="muro_mode" class="mode_button" id="mode_{{ id }}" onclick=mode_change('{{ id }}')>
             <span>{{ name }}</span>
         </label>
         {% endraw %}
     </script>
-    <script id="machine_template" type="x-tmpl-mustache">
+    <script id="device_template" type="x-tmpl-mustache">
         {% raw %}
-        <div class="machine">
+        <div class="device">
             <label for="{{ id }}" class="switch">
                 <input id="{{ id }}" type="checkbox" onclick="toggle_device('{{ id }}')">
                 <div class="slider round"></div>
             </label>
-            <span>{{ display_name }}</span>
+            <span>{{ name }}</span>
         </div>
         {% endraw %}
     </script>
@@ -48,7 +48,7 @@
             <img src="/static/img/logo.svg" class="logo">
             <span>Muro Steuerung</span>
         </div>
-        <div id="sensor_data" class="sensor_data">
+        <div id="sensor_container" class="sensor_data">
         </div>
 
         <div id="mode_container" class="switchbuttons block">
@@ -85,7 +85,7 @@
             <!-- <div class="setting_container">
             </div> -->
 
-            <div class="machine_container">
+            <div id="device_container" class="device_container">
             </div>
         </div>
 
