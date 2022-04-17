@@ -13,6 +13,7 @@ class SensorController:
         for key, value in sensor_config.items():
             value = eval(value)
             value['id'] = key
+            value['unit'] = '°C'
             sensor_list.append(value)
         self.sensor_list = sorted(sensor_list, key=lambda d: d['GPIO'], reverse=True)
         
@@ -30,18 +31,19 @@ class SensorController:
             values = []
             for path in sensor_paths:
                 with open(path) as f:
-                    value = re.search(r'(?<=t\=)\d*', f.read()).group()
+                    value = re.search(r'(?<=t\=)\d*', f.read())
                     if value:
-                        values.append(float(value)/1000)
+                        values.append(float(value.group())/1000)
             if len(values) > 0:
-                avg = sum(values)/len(values)
+                avg = round(sum(values)/len(values), 2)
             else:
                 avg = False
             
             self.sensors[sensor['id']].value = avg
             i += 1
 
-    def get_sensor_dict(self):
+    @property
+    def sensor_data(self):
         return self.sensors.toDict()
 
 sc = SensorController()

@@ -5,6 +5,6 @@ import os
 os.chdir(os.path.dirname(__file__))
 eventlet.monkey_patch()
 
-from modules import *
+import modules
 
-socket_.sio.run(app)
+modules.controller_loop.sio.run(modules.app)

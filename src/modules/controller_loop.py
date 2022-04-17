@@ -6,13 +6,53 @@ import datetime
 import threading
 import inspect
 import sys
+from flask_socketio import SocketIO
 
 from . import settings
-from . import device_controller
+from .device_controller import dc
+from .sensor_controller import sc
 from . import database
-from . import socket_
 from .app import app
 import modes
+
+
+sio = SocketIO(
+    app,
+    cors_allowed_origins=[],
+    async_mode="eventlet",
+    ping_timeout=30,
+    logger=True,
+    engineio_logger=True,
+)
+
+@sio.event
+def connect(sid):
+    data = { # Dummy Data
+        "sensors": sc.sensor_list,
+        "modes": cl.modes_repr,
+        "devices": dc.device_statuses,
+        "settings":  []
+    }
+    sio.emit('init', data, room=sid)
+
+@sio.on("mode_change")
+def mode_change(mode):
+    cl.change_mode(mode)
+    sio.emit("mode_change", mode, broadcast=True, include_self=False)
+    return 200
+
+@sio.on("setting_change")
+def on_setting_change(setting_name, value):
+    cl.settings[setting_name] = value
+    sio.emit("setting_change", value, broadcast=True, include_self=False)
+    return 200
+
+@sio.on("device_toggled")
+def on_device_toggled(device):
+    status = dc.toggle_device(device)
+    data = {device: status}
+    sio.emit("device_toggled_new_status", data, broadcast=True, include_self=False)
+    return status
 
 
 class ControllerLoop(threading.Thread):
@@ -37,21 +77,15 @@ class ControllerLoop(threading.Thread):
         db_write_i = 0
         while True:
             # Gather data
-            # data = self.read_sensor_values()
-            # if data == None:
-            #     time.sleep(1)
-            #     continue
-            # data["heater"] = (
-            #     100 if any([rc.machine_status["heater1"], rc.machine_status["heater2"]]) else 0
-            # )
-            # data["bed_vent"] = 100 if rc.machine_status["bed_vent"] else 0
-            # data["muro_vent"] = 100 if rc.machine_status["muro_vent"] else 0
+            t1 = time.time()
+            sc.read_sensors()
+            print(f"reading sensors took {time.time()-t1} seconds")
 
             # Run Cycle
             self.current_mode.cycle()
 
             # Emit data to clients
-            # socket_.emit_state(data)
+            emit_state()
 
             # Write data to database (every 3rd time)
             # db_write_i += 1
@@ -113,3 +147,16 @@ class ControllerLoop(threading.Thread):
     #         "muro_temp": f"{round(self.muro_temp, 1):.1f}",
     #         "muro_humidity": f"{round(self.muro_humidity, 1):.1f}",
     #     }
+
+def emit_state():
+    data = {
+        "sensor_data": sc.sensor_data,
+        "device_data": dc.device_statuses,
+        # "settings": controller.koji_settings,
+        "current_mode": cl.current_mode.__name__,
+    }
+    sio.emit("state_update", data)
+
+
+cl = ControllerLoop()
+cl.start()

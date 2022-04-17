@@ -15,10 +15,18 @@
     <script id="sensor_template" type="x-tmpl-mustache">
         {% raw %}
         <div class="block">
-            <div class="number_display" id="{{ id }}">-</div>
+            <div class="number_display" id="{{ id }}_value">-</div>
             <div class="number_display unit"> {{ unit }}</div>
-            <div>{{ display_name }}</div>
+            <div>{{ name }}</div>
         </div>
+        {% endraw %}
+    </script>
+    <script id="mode_template" type="x-tmpl-mustache">
+        {% raw %}
+        <label for="{{ id }}">
+            <input type="radio" name="muro_mode" class="mode_button" id="{{ id }}" onclick="mode_change('{{ id }}')">
+            <span>{{ name }}</span>
+        </label>
         {% endraw %}
     </script>
     <script id="machine_template" type="x-tmpl-mustache">
@@ -30,14 +38,6 @@
             </label>
             <span>{{ display_name }}</span>
         </div>
-        {% endraw %}
-    </script>
-    <script id="mode_template" type="x-tmpl-mustache">
-        {% raw %}
-        <label for="{{ id }}">
-            <input type="radio" name="muro_mode" class="mode_button" id="{{ mode['id'] }}" onclick="mode_change('{{ mode['id'] }}')">
-            <span>{{ name }}</span>
-        </label>
         {% endraw %}
     </script>
 </head>

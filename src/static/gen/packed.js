@@ -358,18 +358,12 @@ else{return undefined;}};var mustache={name:'mustache.js',version:'4.2.0',tags:[
 'but "'+typeStr(template)+'" was given as the first '+
 'argument for mustache#render(template, view, partials)');}
 return defaultWriter.render(template,view,partials,config);};mustache.escape=escapeHtml;mustache.Scanner=Scanner;mustache.Context=Context;mustache.Writer=Writer;return mustache;})));(async()=>{let permission=await Notification.requestPermission();})();var socket=io();function renderTemplate(template_name,data){var template=document.getElementById(template_name).innerHTML;var rendered=Mustache.render(template,data);return rendered;}
-socket.on("init",(data,callback)=>{console.log(data['sensors']);document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;})
+socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;})
 document.getElementById('sensor_data').innerHTML='';data['sensors'].forEach(sensor=>{html=renderTemplate('sensor_template',sensor)
 document.getElementById('sensor_data').innerHTML+=html;});})
-socket.on("state_update",(data,callback)=>{const focused=document.activeElement;for(const[sensor,value]of Object.entries(data["sensor_data"])){const elem=document.getElementById(sensor);if(!elem){continue;}
-elem.innerHTML=value;}
-for(const[machine,state]of Object.entries(data["machine_data"])){const elem=document.getElementById(machine);if(!elem){continue;}
-elem.checked=state;}
-for(const[setting,value]of Object.entries(data["koji_settings"])){const elem=document.getElementById(setting);if(!elem||elem===focused){continue;}
-elem.value=value;}
-for(const[setting,value]of Object.entries(data["misc"])){const elem=document.getElementById(setting);if(!elem){continue;}
-if(elem.type=="checkbox"){elem.checked=value;}else{elem.value=value;}}
-document.getElementById("mode_"+data["current_mode"]).checked=true;const machines=document.querySelectorAll(".machine input");if(data["current_mode"]!="manual"){for(var i=0;i<machines.length;i++){machines[i].disabled=true;machines[i].parentElement.classList.add("disabled");}}else{for(var i=0;i<machines.length;i++){machines[i].disabled=false;machines[i].parentElement.classList.remove("disabled");}}})
+socket.on("state_update",(state,callback)=>{const focused=document.activeElement;for(const[sensor,data]of Object.entries(state["sensor_data"])){const elem=document.getElementById(sensor+'_value');if(!elem){continue;}
+elem.innerHTML=data['value'];}
+})
 function mode_change(mode){socket.emit('mode_change',mode,(success)=>{if(success){console.log("Successfully changed mode");}});}
 function toggle_device(device){socket.emit('device_toggled',device,(status)=>{document.getElementById(device).checked=status;});}
 function target_temp_change(){target_temp=parseFloat(document.getElementById('target_temp').value);socket.emit('target_temp_change',target_temp);}
