@@ -5,3 +5,4 @@ venv
 src/static/.webassets-cache/*
 src/state.json
 src/config.ini
+src/_*.py
