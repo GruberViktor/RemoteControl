@@ -15,6 +15,8 @@ dotmap = "*"
 flask-socketio = "*"
 pyscss = "*"
 jsmin = "*"
+aiofiles = "*"
+json-fix = "*"
 
 [dev-packages]
 

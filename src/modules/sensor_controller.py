@@ -3,6 +3,8 @@ import glob
 import re
 import time
 from dotmap import DotMap
+import asyncio
+import aiofiles
 
 from .config import config
 
@@ -13,15 +15,15 @@ class SensorController:
         sensor_list = []
         for key, value in sensor_config.items():
             value = eval(value)
-            value['id'] = key
-            value['unit'] = '°C'
+            value["id"] = key
+            value["unit"] = "°C"
             sensor_list.append(value)
-        self.sensor_list = sorted(sensor_list, key=lambda d: d['GPIO'], reverse=True)
-        
+        self.sensor_list = sorted(sensor_list, key=lambda d: d["GPIO"], reverse=True)
+
         self.sensors = DotMap()
         for sensor in self.sensor_list:
-            self.sensors[sensor['id']] = DotMap({"value": False, "unit": "°C"})
-        
+            self.sensors[sensor["id"]] = DotMap({"value": False, "unit": "°C"})
+
     def read_sensors(self):
         i = 1
         for sensor in self.sensor_list:
@@ -31,22 +33,24 @@ class SensorController:
             values = []
             for path in sensor_paths:
                 with open(path) as f:
-                    content = f.read() 
-                    # For some reason this is slow as shit compared to reading the value through a RPI Pico.
-                    # Maybe because of a bad SD card. 
-                    value = re.search(r'(?<=t\=)\d*', content)
+                    content = f.read()
+                    # This is too slow. Two things could be improved: have the resolution of
+                    # the sensor decreased, and reading the sensors in threads. Async file
+                    # reading in python uses threads anyway as far as I remember.
+                    value = re.search(r"(?<=t\=)\d*", content)
                     if value:
-                        values.append(float(value.group())/1000)
+                        values.append(float(value.group()) / 1000)
             if len(values) > 0:
-                avg = round(sum(values)/len(values), 2)
+                avg = round(sum(values) / len(values), 2)
             else:
                 avg = False
-            
-            self.sensors[sensor['id']].value = avg
+
+            self.sensors[sensor["id"]].value = avg
             i += 1
 
     @property
     def sensor_data(self):
         return self.sensors.toDict()
+
 
 sc = SensorController()

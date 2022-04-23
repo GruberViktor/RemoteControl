@@ -358,20 +358,22 @@ else{return undefined;}};var mustache={name:'mustache.js',version:'4.2.0',tags:[
 'but "'+typeStr(template)+'" was given as the first '+
 'argument for mustache#render(template, view, partials)');}
 return defaultWriter.render(template,view,partials,config);};mustache.escape=escapeHtml;mustache.Scanner=Scanner;mustache.Context=Context;mustache.Writer=Writer;return mustache;})));(async()=>{let permission=await Notification.requestPermission();})();var socket=io();function renderTemplate(template_name,data){var template=document.getElementById(template_name).innerHTML;var rendered=Mustache.render(template,data);return rendered;}
+function render_settings(settings){const setting_container=document.getElementById("setting_container");setting_container.innerHTML="";for(const[id,setting]of Object.entries(settings)){if(setting.visible==false)continue;setting['id']=id;html=renderTemplate('setting_template',setting);setting_container.innerHTML+=html;}}
 socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;});document.getElementById('sensor_container').innerHTML='';data['sensors'].forEach(sensor=>{html=renderTemplate('sensor_template',sensor)
-document.getElementById('sensor_container').innerHTML+=html;});document.getElementById('device_container').innerHTML='';console.log(data["devices"]);data['devices'].forEach(device=>{html=renderTemplate('device_template',device)
-document.getElementById('device_container').innerHTML+=html;});})
+document.getElementById('sensor_container').innerHTML+=html;});document.getElementById('device_container').innerHTML='';data['devices'].forEach(device=>{html=renderTemplate('device_template',device)
+document.getElementById('device_container').innerHTML+=html;});render_settings(data["settings"]);})
+socket.on("mode_changed",(data,callback)=>{render_settings(data["settings"]);console.log("MODE CHANGED REMOTE");})
 socket.on("state_update",(state,callback)=>{const focused=document.activeElement;for(const[sensor,data]of Object.entries(state["sensor_data"])){const elem=document.getElementById(sensor+'_value');if(!elem){continue;}
 elem.innerHTML=data['value'];}
+for(const[machine,status]of Object.entries(state["device_data"])){const elem=document.getElementById(machine);if(!elem){continue;}
+elem.checked=status;}
+for(const[setting,value]of Object.entries(state["settings"])){const elem=document.getElementById(setting);if(!elem){continue;}
+const type=elem.getAttribute('type');if(!elem||elem===focused){continue;}
+if(type=="number"){elem.value=value;}
+else if(type=="checkbox"){elem.checked=value;}}
 document.getElementById("mode_"+state["current_mode"]).checked=true;const devices=document.querySelectorAll(".device input");if(state["current_mode"]!="Manual"){for(var i=0;i<devices.length;i++){devices[i].disabled=true;devices[i].parentElement.classList.add("disabled");}}else{for(var i=0;i<devices.length;i++){devices[i].disabled=false;devices[i].parentElement.classList.remove("disabled");}}})
-function mode_change(mode){console.log(mode);socket.emit('mode_change',mode,(success)=>{if(success){console.log("Successfully changed mode");}});}
+function mode_change(mode){socket.emit('mode_change',mode,(success)=>{if(success){console.log("Successfully changed mode");}});}
 function toggle_device(device){socket.emit('device_toggled',device,(status)=>{document.getElementById(device).checked=status;});}
-function target_temp_change(){target_temp=parseFloat(document.getElementById('target_temp').value);socket.emit('target_temp_change',target_temp);}
-socket.on("target_temp_change",(target_temp)=>{document.getElementById("target_temp").value=target_temp;})
-function target_hum_change(){target_hum=parseInt(document.getElementById('target_hum').value);socket.emit('target_hum_change',target_hum);}
-socket.on("target_hum_change",(target_hum)=>{document.getElementById("target_hum").value=target_hum;})
-function koji_max_temp_change(){koji_max_temp=parseInt(document.getElementById('koji_max_temp').value);socket.emit('koji_max_temp_change',koji_max_temp);}
-socket.on("koji_max_temp_change",(koji_max_temp)=>{document.getElementById("koji_max_temp").value=koji_max_temp;})
-function koji_min_temp_change(){koji_min_temp=parseInt(document.getElementById('koji_min_temp').value);socket.emit('koji_min_temp_change',koji_min_temp);}
-socket.on("koji_min_temp_change",(koji_min_temp)=>{document.getElementById("koji_min_temp").value=koji_min_temp;})
-function heater_lock_change(){value=document.getElementById('heater_lock').checked;socket.emit('heater_lock_change',value);}
+function on_setting_changed(setting){var value;const elem=document.getElementById(setting);const type=elem.getAttribute('type');if(type=="number"){value=elem.value;}
+else if(type=="checkbox"){value=elem.checked;}
+data={"setting":setting,"value":value};socket.emit('setting_changed',data);}

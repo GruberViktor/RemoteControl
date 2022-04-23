@@ -2,39 +2,120 @@
 ### Register your controller logic here ###
 ###################################################
 
+from dotmap import DotMap
+
 from modules.device_controller import dc
 from modules.sensor_controller import sc
+from modules.settings import Settings, Setting
 
 try:
     import custom_modes
 except ImportError:
     pass
 
-class Off:
+
+class Mode:
+    s = Settings()
+
+    def __init__(self):
+        pass
+
+    def cycle(self):
+        pass
+
+
+class Off(Mode):
     display_name = "Off"
     priority = 10
+    s = Settings()
 
-    def cycle(self):
-        pass
 
-class Manual:
-    display_name = "Manual"
+class Manual(Mode):
+    display_name = "Manuell"
     priority = 100
 
-    def cycle(self):
-        pass
 
-
-class KojiMode:
+class Koji(Mode):
     display_name = "Koji"
     priority = 30
+
+    s = Settings(
+        {
+            "muro_target_temp": {
+                "display_name": "Muro Temperatur",
+                "visible": True,
+                "val": 30,
+                "min_value": 20,
+                "max_value": 40,
+                "step": 0.5,
+                "type": "number",
+            },
+            "muro_target_temp_hys": {
+                "display_name": "Muro Temperatur Hysterese",
+                "visible": False,
+                "val": 2,
+                "min_value": 1,
+                "max_value": 5,
+                "step": 0.5,
+                "type": "number",
+            },
+            "koji_target_temp": {
+                "display_name": "Ziel Koji Temperatur",
+                "visible": True,
+                "val": 32,
+                "min": 20,
+                "max": 44,
+                "step": 0.5,
+                "type": "number",
+            },
+            "koji_max_temp": {
+                "display_name": "Max. Koji Temperatur",
+                "visible": True,
+                "val": 34,
+                "min_value": 20,
+                "max_value": 44,
+                "step": 0.5,
+                "type": "number",
+            },
+            "muro_hum": {
+                "display_name": "Muro Luftfeuchtigkeit",
+                "visible": True,
+                "val": 90,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "type": "number",
+            },
+            "muro_hum_hys": {
+                "display_name": "Muro Luftfeuchtigkeit Hysterese",
+                "visible": False,
+                "val": 3,
+                "min": 1,
+                "max": 8,
+                "step": 0.5,
+                "type": "number",
+            },
+            "heater_lock": {
+                "display_name": "Heizung Sperre",
+                "visible": True,
+                "val": False,
+                "min": None,
+                "max": None,
+                "step": None,
+                "type": "checkbox",
+            },
+        }
+    )
+
+    s.muro_target_temp.val = 32
 
     def cycle(self):
         pass
         ####################
         ### Muro Heizung ###
-        
+
         ## Über Idealbande ###
+
     #     if self.muro_temp >= self.target_temp + self.hys_temp:
     #         self.turn_heater_on_off(False)
     #         rc.turn_device_on_off("muro_vent", True)
@@ -52,7 +133,7 @@ class KojiMode:
 
     #     #######################
     #     ### Koji Temperatur ###
-        
+
     #     # Koji ist über der maximalen Temperatur
     #     if self.koji_temp >= self.koji_max_temp:
     #         rc.turn_device_on_off("bed_vent", True)
@@ -64,7 +145,7 @@ class KojiMode:
 
     #     ########################
     #     ### Luftfeuchtigkeit ###
-        
+
     #     rc.check_water_sensor()
     #     if not self.currently_cooling_muro:
     #         if not self.muro_humidity == 0:
@@ -86,9 +167,11 @@ class KojiMode:
     #     elif on_off == False:
     #         rc.turn_heater_on_off(False)
 
-class DryingMode:
-    display_name = "Drying"
+
+class Drying(Mode):
+    display_name = "Trocknungsmodus"
     priority = 60
+    s = Settings()
 
     def cycle(self):
         unwanted_machines = [
@@ -121,4 +204,3 @@ class DryingMode:
             rc.turn_device_on_off("dehumidifier", False)
             rc.turn_device_on_off("muro_vent", False)
             rc.turn_device_on_off("bed_vent", False)
-

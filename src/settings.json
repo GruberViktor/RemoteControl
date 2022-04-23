@@ -1,1 +1,1 @@
-{"current_mode": "Off", "target_temp": 24, "hys_temp": 0.75, "target_hum": 90, "hys_hum": 4, "koji_max_temp": 27, "koji_min_temp": 26, "bed_vent_just_stopped": false, "currently_cooling_muro": false, "heater_lock": true}
+{"current_mode": "Koji", "target_temp": 24, "hys_temp": 0.75, "target_hum": 90, "hys_hum": 4, "koji_max_temp": 27, "koji_min_temp": 26, "bed_vent_just_stopped": false, "currently_cooling_muro": false, "heater_lock": true}

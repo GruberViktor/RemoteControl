@@ -7,6 +7,7 @@ import threading
 import inspect
 import sys
 from flask_socketio import SocketIO
+import asyncio
 
 from . import settings
 from .device_controller import dc
@@ -25,27 +26,32 @@ sio = SocketIO(
     engineio_logger=True,
 )
 
+
 @sio.event
 def connect(sid):
-    data = { # Dummy Data
+    data = {
         "sensors": sc.sensor_list,
         "modes": cl.modes_repr,
         "devices": dc.device_list,
-        "settings":  []
+        "settings": cl.current_mode.s.toDict(),
     }
-    sio.emit('init', data, room=sid)
+    sio.emit("init", data, room=sid)
+
 
 @sio.on("mode_change")
 def mode_change(mode):
     cl.change_mode(mode)
-    sio.emit("mode_change", mode, broadcast=True, include_self=False)
+    data = {"settings": cl.current_mode.s.toDict()}
+    sio.emit("mode_changed", data)
     return 200
 
-@sio.on("setting_change")
-def on_setting_change(setting_name, value):
-    cl.settings[setting_name] = value
-    sio.emit("setting_change", value, broadcast=True, include_self=False)
+
+@sio.on("setting_changed")
+def on_setting_changed(data):
+    cl.current_mode.s[data["setting"]].val = data["value"]
+    # sio.emit("setting_changed", data, broadcast=True, include_self=False)
     return 200
+
 
 @sio.on("device_toggled")
 def on_device_toggled(device):
@@ -54,12 +60,16 @@ def on_device_toggled(device):
     sio.emit("device_toggled_new_status", data, broadcast=True, include_self=False)
     return status
 
+
 def emit_state():
-    print("emit")
+    settings_condensed = {}
+    for name, setting in cl.current_mode.s.items():
+        if setting.visible:
+            settings_condensed[name] = setting.val
     data = {
         "sensor_data": sc.sensor_data,
         "device_data": dc.device_statuses,
-        # "settings": controller.koji_settings,
+        "settings": settings_condensed,
         "current_mode": cl.current_mode.__class__.__name__,
     }
     sio.emit("state_update", data)
@@ -69,9 +79,12 @@ class ControllerLoop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.settings = {}
-        self.modes = [obj for name, obj in inspect.getmembers(modes) if inspect.isclass(obj)]
-        self.modes_repr = [{'id': mode.__name__, 'name': mode.display_name, 'priority': mode.priority} for mode in self.modes]
-        self.modes_repr = sorted(self.modes_repr, key=lambda d: d['priority'])
+        self.modes = modes.Mode.__subclasses__()
+        self.modes_repr = [
+            {"id": mode.__name__, "name": mode.display_name, "priority": mode.priority}
+            for mode in self.modes
+        ]
+        self.modes_repr = sorted(self.modes_repr, key=lambda d: d["priority"])
 
     def run(self):
         self.current_mode = settings.settings.get("current_mode")
@@ -79,11 +92,13 @@ class ControllerLoop(threading.Thread):
             self.change_mode("Off")
         else:
             self.change_mode(self.current_mode)
-            
+
         # Start Loop
         self.controller_loop()
 
     def controller_loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         db_write_i = 0
         while True:
             # Gather data
@@ -108,7 +123,7 @@ class ControllerLoop(threading.Thread):
 
     def change_mode(self, mode):
         if type(mode) == str:
-            self.current_mode = getattr(sys.modules['modes'], mode)()
+            self.current_mode = getattr(sys.modules["modes"], mode)()
         else:
             self.current_mode = mode()
         settings.update("current_mode", self.current_mode.__class__.__name__)
@@ -155,7 +170,6 @@ class ControllerLoop(threading.Thread):
     #         "muro_temp": f"{round(self.muro_temp, 1):.1f}",
     #         "muro_humidity": f"{round(self.muro_humidity, 1):.1f}",
     #     }
-
 
 
 cl = ControllerLoop()

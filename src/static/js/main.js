@@ -6,6 +6,17 @@ function renderTemplate(template_name, data) {
     return rendered;
 }
 
+function render_settings(settings) {
+    const setting_container = document.getElementById("setting_container");
+    setting_container.innerHTML = "";
+    for (const [id, setting] of Object.entries(settings)) {
+        if (setting.visible == false) continue;
+        setting['id'] = id;
+        html = renderTemplate('setting_template', setting);
+        setting_container.innerHTML += html;
+    }
+}
+
 socket.on("init", (data, callback) => {
     // Render modes
     document.getElementById('mode_container').innerHTML = '';
@@ -23,13 +34,18 @@ socket.on("init", (data, callback) => {
 
     // Render devices
     document.getElementById('device_container').innerHTML = '';
-    console.log(data["devices"]);
     data['devices'].forEach(device => {
         html = renderTemplate('device_template', device)
         document.getElementById('device_container').innerHTML += html;
     });
 
+    render_settings(data["settings"]);
 })
+
+socket.on("mode_changed", (data, callback) => {
+    render_settings(data["settings"]);
+})
+
 
 socket.on("state_update", (state, callback) => {
     const focused = document.activeElement;
@@ -39,17 +55,20 @@ socket.on("state_update", (state, callback) => {
         elem.innerHTML = data['value'];
     }
 
-    // for (const [machine, state] of Object.entries(data["device_data"])) {
-    //     const elem = document.getElementById(machine);
-    //     if (!elem) { continue; }
-    //     elem.checked = state;
-    // }
+    for (const [machine, status] of Object.entries(state["device_data"])) {
+        const elem = document.getElementById(machine);
+        if (!elem) { continue; }
+        elem.checked = status;
+    }
 
-    // for (const [setting, value] of Object.entries(data["koji_settings"])) {
-    //     const elem = document.getElementById(setting);
-    //     if (!elem || elem === focused) { continue; }
-    //     elem.value = value;
-    // }
+    for (const [setting, value] of Object.entries(state["settings"])) {
+        const elem = document.getElementById(setting);
+        if (!elem) { continue; }
+        const type = elem.getAttribute('type');
+        if (!elem || elem === focused) { continue; }
+        if (type == "number") { elem.value = value; }
+        else if (type == "checkbox") { elem.checked = value; }
+    }
 
     // for (const [setting, value] of Object.entries(data["misc"])) {
     //     const elem = document.getElementById(setting);
@@ -80,7 +99,6 @@ socket.on("state_update", (state, callback) => {
 })
 
 function mode_change(mode) {
-    console.log(mode);
     socket.emit('mode_change', mode, (success) => {
         if (success) {
             console.log("Successfully changed mode");
@@ -88,65 +106,24 @@ function mode_change(mode) {
     });
 }
 
+
+
 function toggle_device(device) {
     socket.emit('device_toggled', device, (status) => {
         document.getElementById(device).checked = status;
     });
 }
 
-function target_temp_change() {
-    target_temp = parseFloat(document.getElementById('target_temp').value);
-    socket.emit('target_temp_change', target_temp);
-
-    // const koji_max_temp_input = document.getElementById("koji_max_temp");
-    // koji_max_temp_input.min = target_temp
-    // if (target_temp > koji_max_temp_input.value) {
-    //     koji_max_temp_input.value = target_temp;
-    //     koji_max_temp_change();
-    // }
-
-    // koji_min_temp_input = document.getElementById("koji_min_temp")
-    // koji_min_temp_input.min = target_temp + 2
-    // if (target_temp > koji_min_temp + 2) {
-    //     koji_min_temp_input.value = target_temp + 2;
-    //     koji_min_temp_change();
-    // }
-
-}
-
-socket.on("target_temp_change", (target_temp) => {
-    document.getElementById("target_temp").value = target_temp;
-})
-
-function target_hum_change() {
-    target_hum = parseInt(document.getElementById('target_hum').value);
-    socket.emit('target_hum_change', target_hum);
-}
-
-socket.on("target_hum_change", (target_hum) => {
-    document.getElementById("target_hum").value = target_hum;
-})
-
-function koji_max_temp_change() {
-    koji_max_temp = parseInt(document.getElementById('koji_max_temp').value);
-    socket.emit('koji_max_temp_change', koji_max_temp);
-}
-
-socket.on("koji_max_temp_change", (koji_max_temp) => {
-    document.getElementById("koji_max_temp").value = koji_max_temp;
-})
-
-function koji_min_temp_change() {
-    koji_min_temp = parseInt(document.getElementById('koji_min_temp').value);
-    socket.emit('koji_min_temp_change', koji_min_temp);
-
-}
-
-socket.on("koji_min_temp_change", (koji_min_temp) => {
-    document.getElementById("koji_min_temp").value = koji_min_temp;
-})
-
-function heater_lock_change() {
-    value = document.getElementById('heater_lock').checked;
-    socket.emit('heater_lock_change', value);
+function on_setting_changed(setting) {
+    var value;
+    const elem = document.getElementById(setting);
+    const type = elem.getAttribute('type');
+    if (type == "number") {
+        value = elem.value;
+    }
+    else if (type == "checkbox") {
+        value = elem.checked;
+    }
+    data = { "setting": setting, "value": value };
+    socket.emit('setting_changed', data);
 }
