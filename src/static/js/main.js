@@ -27,10 +27,12 @@ socket.on("init", (data, callback) => {
 
     // Render sensors
     document.getElementById('sensor_container').innerHTML = '';
-    data['sensors'].forEach(sensor => {
-        html = renderTemplate('sensor_template', sensor)
+    // data['sensors'].forEach(sensor => {
+    for (const [sensor, sensor_info] of Object.entries(data["sensors"])) {
+        sensor_info["id"] = sensor;
+        html = renderTemplate('sensor_template', sensor_info);
         document.getElementById('sensor_container').innerHTML += html;
-    });
+    };
 
     // Render devices
     document.getElementById('device_container').innerHTML = '';
@@ -49,10 +51,16 @@ socket.on("mode_changed", (data, callback) => {
 
 socket.on("state_update", (state, callback) => {
     const focused = document.activeElement;
+    var val;
     for (const [sensor, data] of Object.entries(state["sensor_data"])) {
-        const elem = document.getElementById(sensor + '_value');
+        const elem = document.getElementById(sensor + '_val');
         if (!elem) { continue; }
-        elem.innerHTML = data['value'];
+        if (data['val'] == false || data['unit'] == 'ppm') {
+            val = data['val']
+        } else {
+            val = data['val'].toFixed(2);
+        }
+        elem.innerHTML = val;
     }
 
     for (const [machine, status] of Object.entries(state["device_data"])) {
@@ -127,3 +135,11 @@ function on_setting_changed(setting) {
     data = { "setting": setting, "value": value };
     socket.emit('setting_changed', data);
 }
+
+const debounceEvent = (callback, time = 250, interval) =>
+    (...args) =>
+        clearTimeout(interval, interval = setTimeout(() => callback(...args), time));
+function alarm() {
+    alarm_audio.play();
+}
+const alarm_debounced = debounceEvent(alarm, 15000);

@@ -1,6 +1,9 @@
 import RPi.GPIO as GPIO
+from modules.device_controller import dc
 
 water_counter = 0
+
+
 def check_water_sensor():
     global water_counter
     # 1 wenn leer, 0 wenn er schwimmt
@@ -8,7 +11,7 @@ def check_water_sensor():
     if not full:
         water_counter += 1
         if water_counter == 5:
-            turn_device_on_off("osmosis_valve", True)
+            dc.osmosis_valve.turn_on()
             water_counter = 0
     else:
-        turn_device_on_off("osmosis_valve", False)
+        dc.osmosis_valve.turn_off()

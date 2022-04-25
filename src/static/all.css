@@ -89,7 +89,7 @@ a {
 .number_display {
   display: inline-block;
   font-size: 2em;
-  font-weight: 800; }
+  font-weight: 600; }
 
   .container {
     margin-top: 1em;
@@ -108,7 +108,8 @@ a {
       align-content: flex-start;
       background: #343C3F;
       border-radius: 0.5em;
-      margin: 0.5em; }
+      margin: 0.5em;
+      transition: cubic-bezier(1, 0, 0, 1); }
       .setting_container .setting {
         text-align: center;
         display: flex;

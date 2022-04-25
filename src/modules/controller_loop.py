@@ -7,7 +7,6 @@ import threading
 import inspect
 import sys
 from flask_socketio import SocketIO
-import asyncio
 
 from . import settings
 from .device_controller import dc
@@ -22,18 +21,18 @@ sio = SocketIO(
     cors_allowed_origins=[],
     async_mode="eventlet",
     ping_timeout=30,
-    logger=True,
-    engineio_logger=True,
+    logger=False,
+    engineio_logger=False,
 )
 
 
 @sio.event
 def connect(sid):
     data = {
-        "sensors": sc.sensor_list,
+        "sensors": sc.sensors,
         "modes": cl.modes_repr,
         "devices": dc.device_list,
-        "settings": cl.current_mode.s.toDict(),
+        "settings": cl.current_mode.settings,
     }
     sio.emit("init", data, room=sid)
 
@@ -41,14 +40,16 @@ def connect(sid):
 @sio.on("mode_change")
 def mode_change(mode):
     cl.change_mode(mode)
-    data = {"settings": cl.current_mode.s.toDict()}
+    data = {"settings": cl.current_mode.settings}
     sio.emit("mode_changed", data)
     return 200
 
 
 @sio.on("setting_changed")
 def on_setting_changed(data):
-    cl.current_mode.s[data["setting"]].val = data["value"]
+    if data["value"] not in [True, False]:
+        data["value"] = float(data["value"])
+    cl.current_mode.settings[data["setting"]]["val"] = data["value"]
     # sio.emit("setting_changed", data, broadcast=True, include_self=False)
     return 200
 
@@ -56,18 +57,18 @@ def on_setting_changed(data):
 @sio.on("device_toggled")
 def on_device_toggled(device):
     status = dc.toggle_device(device)
-    data = {device: status}
-    sio.emit("device_toggled_new_status", data, broadcast=True, include_self=False)
-    return status
+    # data = {device: status}
+    # sio.emit("device_toggled_new_status", data, broadcast=True, include_self=False)
+    return 200
 
 
 def emit_state():
     settings_condensed = {}
-    for name, setting in cl.current_mode.s.items():
-        if setting.visible:
-            settings_condensed[name] = setting.val
+    for name, setting in cl.current_mode.settings.items():
+        if setting["visible"]:
+            settings_condensed[name] = setting["val"]
     data = {
-        "sensor_data": sc.sensor_data,
+        "sensor_data": sc.sensors,
         "device_data": dc.device_statuses,
         "settings": settings_condensed,
         "current_mode": cl.current_mode.__class__.__name__,
@@ -97,8 +98,6 @@ class ControllerLoop(threading.Thread):
         self.controller_loop()
 
     def controller_loop(self):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         db_write_i = 0
         while True:
             # Gather data

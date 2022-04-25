@@ -4,6 +4,7 @@
 <head>
     <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
 
+
     {% assets 'js_all' %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}
@@ -15,7 +16,7 @@
     <script id="sensor_template" type="x-tmpl-mustache">
         {% raw %}
         <div class="block">
-            <div class="number_display" id="{{ id }}_value">-</div>
+            <div class="number_display" id="{{ id }}_val">-</div>
             <div class="number_display unit"> {{ unit }}</div>
             <div>{{ name }}</div>
         </div>

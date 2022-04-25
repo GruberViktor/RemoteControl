@@ -359,12 +359,12 @@ else{return undefined;}};var mustache={name:'mustache.js',version:'4.2.0',tags:[
 'argument for mustache#render(template, view, partials)');}
 return defaultWriter.render(template,view,partials,config);};mustache.escape=escapeHtml;mustache.Scanner=Scanner;mustache.Context=Context;mustache.Writer=Writer;return mustache;})));(async()=>{let permission=await Notification.requestPermission();})();var socket=io();function renderTemplate(template_name,data){var template=document.getElementById(template_name).innerHTML;var rendered=Mustache.render(template,data);return rendered;}
 function render_settings(settings){const setting_container=document.getElementById("setting_container");setting_container.innerHTML="";for(const[id,setting]of Object.entries(settings)){if(setting.visible==false)continue;setting['id']=id;html=renderTemplate('setting_template',setting);setting_container.innerHTML+=html;}}
-socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;});document.getElementById('sensor_container').innerHTML='';data['sensors'].forEach(sensor=>{html=renderTemplate('sensor_template',sensor)
-document.getElementById('sensor_container').innerHTML+=html;});document.getElementById('device_container').innerHTML='';data['devices'].forEach(device=>{html=renderTemplate('device_template',device)
+socket.on("init",(data,callback)=>{document.getElementById('mode_container').innerHTML='';data['modes'].forEach(mode=>{html=renderTemplate('mode_template',mode);document.getElementById('mode_container').innerHTML+=html;});document.getElementById('sensor_container').innerHTML='';for(const[sensor,sensor_info]of Object.entries(data["sensors"])){sensor_info["id"]=sensor;html=renderTemplate('sensor_template',sensor_info);document.getElementById('sensor_container').innerHTML+=html;};document.getElementById('device_container').innerHTML='';data['devices'].forEach(device=>{html=renderTemplate('device_template',device)
 document.getElementById('device_container').innerHTML+=html;});render_settings(data["settings"]);})
-socket.on("mode_changed",(data,callback)=>{render_settings(data["settings"]);console.log("MODE CHANGED REMOTE");})
-socket.on("state_update",(state,callback)=>{const focused=document.activeElement;for(const[sensor,data]of Object.entries(state["sensor_data"])){const elem=document.getElementById(sensor+'_value');if(!elem){continue;}
-elem.innerHTML=data['value'];}
+socket.on("mode_changed",(data,callback)=>{render_settings(data["settings"]);})
+socket.on("state_update",(state,callback)=>{const focused=document.activeElement;var val;for(const[sensor,data]of Object.entries(state["sensor_data"])){const elem=document.getElementById(sensor+'_val');if(!elem){continue;}
+if(data['val']==false||data['unit']=='ppm'){val=data['val']}else{val=data['val'].toFixed(2);}
+elem.innerHTML=val;}
 for(const[machine,status]of Object.entries(state["device_data"])){const elem=document.getElementById(machine);if(!elem){continue;}
 elem.checked=status;}
 for(const[setting,value]of Object.entries(state["settings"])){const elem=document.getElementById(setting);if(!elem){continue;}
@@ -377,3 +377,5 @@ function toggle_device(device){socket.emit('device_toggled',device,(status)=>{do
 function on_setting_changed(setting){var value;const elem=document.getElementById(setting);const type=elem.getAttribute('type');if(type=="number"){value=elem.value;}
 else if(type=="checkbox"){value=elem.checked;}
 data={"setting":setting,"value":value};socket.emit('setting_changed',data);}
+const debounceEvent=(callback,time=250,interval)=>(...args)=>clearTimeout(interval,interval=setTimeout(()=>callback(...args),time));function alarm(){alarm_audio.play();}
+const alarm_debounced=debounceEvent(alarm,15000);

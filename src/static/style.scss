@@ -2,6 +2,7 @@ $background_light: #343C3F;
 $background_dark: #2d3436;
 
 
+
 body {
     background-image: url('/static/img/hintergrund.jpg');
     background-repeat: repeat;
@@ -119,7 +120,7 @@ input[type="submit"]:hover {
 .number_display {
     display: inline-block;
     font-size: 2em;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 
@@ -142,6 +143,8 @@ input[type="submit"]:hover {
     background: $background_light;
     border-radius: 0.5em;
     margin: 0.5em;
+
+    transition:cubic-bezier(1, 0, 0, 1);
 
     .setting {
         text-align: center;
