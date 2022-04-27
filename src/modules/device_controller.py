@@ -25,6 +25,7 @@ class Device:
             self.gpio_pin = [gpio_pin]
         for pin in self.gpio_pin:
             GPIO.setup(pin, GPIO.OUT)
+            GPIO.output(pin, GPIO.HIGH)
         self.name = str(name)
         self.status = False
 

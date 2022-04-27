@@ -111,12 +111,18 @@ class ControllerLoop(threading.Thread):
 
             # Write data to database (every 3rd time)
             # db_write_i += 1
-            # if db_write_i == 3:
-            #     data.pop("koji_temp1", None)
-            #     data.pop("koji_temp2", None)
-            #     data = {k: float(v) for k, v in data.items()}
-            #     database.write_to_db(data)
-            #     db_write_i = 0
+            # if db_write_i > 3:
+            #     try:
+            #         data = {
+            #             "koji_temp_avg": sc.sensors['koji']['val'],
+            #             # "room_temp": f"{round(, 1):.1f}",
+            #             "muro_temp": sc.sensors['muro']['val'],
+            #             "muro_humidity": sc.sensors['humidity']['val']
+            #             }
+            #         database.write_to_db(data)
+            #         db_write_i = 0
+            #     except KeyError: 
+            #         pass
 
             time.sleep(1)
 

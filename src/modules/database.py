@@ -35,6 +35,6 @@ def write_to_db(data: dict):
         }
     ]
     try:
-        client.write_points(json_body)
+        print(client.write_points(json_body))
     except influxdb.exceptions.InfluxDBServerError:
         print("Server Timout")

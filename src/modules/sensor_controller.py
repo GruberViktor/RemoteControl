@@ -5,6 +5,7 @@ import time
 import serial
 import traceback
 import datetime
+from dotmap import DotMap
 
 from .config import config
 
@@ -84,10 +85,13 @@ class SensorController:
             ser_all = self.ser.read_all().decode().replace("\n", "")
         except OSError:
             print("no serial device found")
+        print(ser_all)
         if len(ser_all) > 0:
             try:
                 # sensor_data = DotMap(eval(ser_all))
                 self.sensors = eval(ser_all)
+                if self.sensors["muro"]["val"] == False:
+                    self.sensors["muro"]["val"] = self.sensors["temp_hum"]["val"]
             except Exception as e:
                 print(datetime.datetime.now(), e)
 

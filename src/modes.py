@@ -1,3 +1,4 @@
+from datetime import datetime
 import serial
 
 from modules.device_controller import dc
@@ -55,7 +56,7 @@ class Koji(Mode):
         },
         "muro_target_temp_hys": {
             "display_name": "Muro Temperatur Hysterese (°C)",
-            "visible": False,
+            "visible": True,
             "val": 2,
             "min_value": 1,
             "max_value": 5,
@@ -107,6 +108,15 @@ class Koji(Mode):
             "step": None,
             "type": "checkbox",
         },
+        "muro_vent_lock": {
+            "display_name": "Muro Ventilator Sperre",
+            "visible": True,
+            "val": False,
+            "min": None,
+            "max": None,
+            "step": None,
+            "type": "checkbox",
+        },
     }
 
     bed_vent_just_stopped = False
@@ -117,34 +127,43 @@ class Koji(Mode):
         s = self.settings
         sensors = sc.sensors
 
-        try:
-            muro_temp = sensors["muro"]["val"]
-            muro_target_temp = s["muro_target_temp"]["val"]
-            muro_target_temp_hys = s["muro_target_temp_hys"]["val"]
-            heater_lock = s["heater_lock"]["val"]
-            koji_target_temp = s["koji_target_temp"]["val"]
-            koji_temp = sensors["koji"]["val"]
-            koji_max_temp = s["koji_max_temp"]["val"]
-            muro_humidity = sensors["humidity"]["val"]
-            muro_target_humidity = s["muro_target_hum"]["val"]
-            muro_target_humidity_hys = s["muro_target_hum_hys"]["val"]
-        except KeyError as e:
-            self.sensor_read_error_count += 1
-            return
-        finally:
-            self.sensor_read_error_count = 0
-
-        if False in [muro_temp, koji_temp, muro_humidity]:
-            self.sensor_read_error_count += 1
-            return
-
-        if self.sensor_read_error_count == 10:
+        if self.sensor_read_error_count == 30:
             send_email(
                 "office@luvifermente.eu",
                 "office@luvifermente.eu",
                 "Muro: Sensor Read Error",
                 "",
             )
+            dc.turn_off_all_devices()
+
+        try:
+            muro_temp = sensors["muro"]["val"]
+            muro_target_temp = s["muro_target_temp"]["val"]
+            muro_target_temp_hys = s["muro_target_temp_hys"]["val"]
+            heater_lock = s["heater_lock"]["val"]
+            muro_vent_lock = s["muro_vent_lock"]["val"]
+            koji_target_temp = s["koji_target_temp"]["val"]
+            koji_temp = sensors["koji"]["val"]
+            koji_max_temp = s["koji_max_temp"]["val"]
+            muro_humidity = sensors["humidity"]["val"]
+            muro_temp_hum = sensors["temp_hum"]["val"]
+            muro_target_humidity = s["muro_target_hum"]["val"]
+            muro_target_humidity_hys = s["muro_target_hum_hys"]["val"]
+
+            if 0 > muro_temp > 70:
+                muro_temp = False
+            if 0 > koji_temp > 70:
+                koji_temp = False
+                print(f"{str(datetime.datetime.now())}: koji_temp = {str(koji_temp)}")
+
+        except KeyError as e:
+            self.sensor_read_error_count += 1
+            return
+
+        if False in [muro_temp, koji_temp, muro_humidity]:
+            self.sensor_read_error_count += 1
+            return
+
 
         ####################
         ### Muro Heizung ###
@@ -153,14 +172,13 @@ class Koji(Mode):
 
         if muro_temp >= muro_target_temp + muro_target_temp_hys:
             dc.heater.turn_off()
-            dc.muro_vent.turn_on()
+            if not muro_vent_lock:
+                dc.muro_vent.turn_on()
         ## Im Ideal ###
-        elif (
-            muro_target_temp + muro_target_temp_hys
-            > muro_temp
-            > muro_target_temp - muro_target_temp_hys
-        ):
-            pass
+        elif muro_temp > muro_target_temp:
+            dc.heater.turn_off()
+        elif muro_temp < muro_target_temp:
+            dc.muro_vent.turn_off()
         ### Unter Idealbande ###
         elif muro_temp <= muro_target_temp - muro_target_temp_hys:
             if not heater_lock:
