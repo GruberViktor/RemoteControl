@@ -4,10 +4,18 @@ import re
 import time
 import serial
 import traceback
+import json
 import datetime
 from dotmap import DotMap
+import board
+import digitalio
+from adafruit_blinka.microcontroller.bcm283x.pin import Pin
+import adafruit_max31865
 
 from .config import config
+
+spi = board.SPI()
+# GPIO.setmode(GPIO.BCM)
 
 
 class SensorController:
@@ -17,6 +25,7 @@ class SensorController:
 
         # self.init_ds18b20_sensors()
         self.init_serial()
+        self.init_MAX31865_sensors()
 
         self.sensors = {}
 
@@ -36,6 +45,8 @@ class SensorController:
             self.sensors[sensor["id"]] = {"val": False, "unit": "°C"}
 
     def init_serial(self):
+        if not config["SERIAL"].getboolean("enabled"):
+            return
         try:
             self.ser = serial.Serial(
                 port=self.serial_config["port"],
@@ -54,6 +65,22 @@ class SensorController:
                 bytesize=serial.EIGHTBITS,
                 timeout=int(self.serial_config["timeout"]),
             )
+
+    def init_MAX31865_sensors(self):
+        self.max31865_sensors = {}
+        for id, dev in config["MAX31865_SENSORS"].items():
+            dev = eval(dev)
+            self.max31865_sensors[id] = {
+                "name": dev["name"],
+                "unit": "°C",
+                "dev": adafruit_max31865.MAX31865(
+                    spi,
+                    digitalio.DigitalInOut(Pin(dev["GPIO"])),
+                    rtd_nominal=dev["rtd_nominal"],
+                    ref_resistor=dev["ref_resistor"],
+                    wires=dev["wires"],
+                ),
+            }
 
     def read_sensors(self):
         ## DS18B20 Sensors
@@ -81,19 +108,33 @@ class SensorController:
         #     i += 1
 
         ## Serial - Pico
-        try:
-            ser_all = self.ser.read_all().decode().replace("\n", "")
-        except OSError:
-            print("no serial device found")
-        print(ser_all)
-        if len(ser_all) > 0:
+        if config["SERIAL"].getboolean("enabled"):
             try:
-                # sensor_data = DotMap(eval(ser_all))
-                self.sensors = eval(ser_all)
-                if self.sensors["muro"]["val"] == False:
-                    self.sensors["muro"]["val"] = self.sensors["temp_hum"]["val"]
-            except Exception as e:
-                print(datetime.datetime.now(), e)
+                bytesToRead = self.ser.inWaiting()
+                ser_all = self.ser.read(bytesToRead)
+                ser_all = ser_all.decode().replace("\r\n", "")
+                # ser_all = self.ser.read_all().decode().replace("\n", "")
+            except OSError:
+                print("no serial device found")
+            if len(ser_all) > 0:
+                try:
+                    vals = json.loads(ser_all.replace("'", '"').strip())
+                    for id, d in vals.items():
+                        if id in ["temp_outside"]:
+                            continue
+                        self.sensors[id] = d
+                except Exception as e:
+                    pass
+                    # print(ser_all)
+                    # print(datetime.datetime.now(), e)
+                    # print(e.args, flush=True)
+
+        for id, dev in self.max31865_sensors.items():
+            self.sensors[id] = {
+                "name": dev["name"],
+                "val": dev["dev"].temperature,
+                "unit": dev["unit"],
+            }
 
     @property
     def sensor_data(self):

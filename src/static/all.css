@@ -56,20 +56,26 @@ a {
   .login form {
     text-align: center; }
 
-.logo_title {
-  display: table;
-  height: 6em;
-  text-align: center; }
-  .logo_title span {
-    display: table-cell;
-    vertical-align: middle;
-    font-weight: 700;
-    font-size: 1.1em; }
-    .logo_title img {
+.header {
+  display: flex;
+  justify-content: space-between; }
+  .header .logo_title {
+    display: table;
+    height: 6em;
+    text-align: center; }
+    .header .logo_title span {
       display: table-cell;
       vertical-align: middle;
-      height: 4em;
-      margin: 1em 1em 0em 1em; }
+      font-weight: 700;
+      font-size: 1.1em; }
+      .header .logo_title img {
+        display: table-cell;
+        vertical-align: middle;
+        height: 4em;
+        margin: 1em 1em 0em 1em; }
+  .header .bell {
+    width: 1.5em;
+    filter: invert(100%); }
 
 .sensor_data {
   display: flex;

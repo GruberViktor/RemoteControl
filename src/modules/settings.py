@@ -19,58 +19,69 @@ except FileNotFoundError:
 
 
 def update(setting_key, setting_value):
-    settings[setting_key] = setting_value
+    with open("settings.json", "r") as file:
+        f = json.load(file)
+    f[setting_key] = setting_value
     with open("settings.json", "w+") as file:
-        file.write(json.dumps(settings))
+        file.write(json.dumps(f))
+
+def save_current_settings(mode, settings):
+    with open("settings.json", "r") as file:
+        f = json.load(file)
+    f[mode] = settings
+    with open("settings.json", "w") as file:
+        file.write(json.dumps(f))
 
 
-class Settings(DotMap):
-    def __setitem__(self, k, v):
-        helper_functions.debounced(self.save_settings, 2)
-        super(Settings, self).__setitem__(k, v)
+# class Settings(dict):
+#     def __setitem__(self, k, v):
+#         super(Settings, self).__setitem__(k, v)
+#         helper_functions.debounced(self.save_settings, 2)
 
-    def save_settings(self):
-        print("saving settings..")
+#     def save_settings(self):
+#         with open("settings.json", "w") as file:
+#             settings = json.load(file)
+#         print("saving settings..")
 
 
-class Setting:
-    def __init__(
-        self,
-        display_name,
-        _type,
-        default_val,
-        min_value=None,
-        max_value=None,
-        step=None,
-        visible=True,
-    ):
-        self.display_name = display_name
-        if _type not in [float, int, bool]:
-            raise ValueError("User either float, int or bool")
-        self._type = _type
-        self.default_val = default_val
-        self.val = self.default_val  # needs to overwritten with saved settings
-        self.min_value = min_value
-        self.max_value = max_value
-        self.step = step
-        self.visible = visible
+# class Setting:
+#     def __init__(
+#         self,
+#         display_name,
+#         _type,
+#         default_val,
+#         min_value=None,
+#         max_value=None,
+#         step=None,
+#         visible=True,
+#     ):
+#         self.display_name = display_name
+#         if _type not in [float, int, bool]:
+#             raise ValueError("User either float, int or bool")
+#         self._type = _type
+#         self.default_val = default_val
+#         self.val = self.default_val  # needs to overwritten with saved settings
+#         self.min_value = min_value
+#         self.max_value = max_value
+#         self.step = step
+#         self.visible = visible
 
-    def __json__(self):
-        if self._type in [float, int]:
-            _type = "number"
-        elif self._type == bool:
-            _type = "checkbox"
+#     def __json__(self):
+#         if self._type in [float, int]:
+#             _type = "number"
+#         elif self._type == bool:
+#             _type = "checkbox"
 
-        return {
-            "id": self.__name__,
-            "display_name": self.display_name,
-            "visible": self.visible,
-            "val": self.val,
-            "min_value": self.min_value,
-            "max_value": self.max_value,
-            "step": self.step,
-            "type": _type,
-        }
+#         return {
+#             "id": self.__name__,
+#             "display_name": self.display_name,
+#             "visible": self.visible,
+#             "val": self.val,
+#             "min_value": self.min_value,
+#             "max_value": self.max_value,
+#             "step": self.step,
+#             "type": _type,
+#         }
 
-    # def __repr__(self):
-    #     return self.val
+#     # def __repr__(self):
+#     #     return self.val

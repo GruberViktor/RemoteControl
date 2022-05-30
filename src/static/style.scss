@@ -59,8 +59,8 @@ input[type="submit"]:hover {
     box-shadow: 0 0 2em 0 rgba(0, 0, 0, 0.4);
     border-radius: 0.5em;
     background: $background_dark;
-
 }
+
 
 @media screen and (max-width: 790px) {
     .main_container {
@@ -77,24 +77,33 @@ input[type="submit"]:hover {
     }
 }
 
-.logo_title {
-    display: table;
-    height: 6em;
-    text-align: center;
+.header {
+    display: flex;
+    justify-content: space-between;
+    .logo_title {
+        display: table;
+        height: 6em;
+        text-align: center;
 
-    span {
-        display: table-cell;
-        vertical-align: middle;
-        font-weight: 700;
-        font-size: 1.1em;
+        span {
+            display: table-cell;
+            vertical-align: middle;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        img {
+            display: table-cell;
+            vertical-align: middle;
+            height: 4em;
+            margin: 1em 1em 0em 1em;
+        }
+    }
+    .bell {
+        width: 1.5em;
+        filter: invert(100%);
     }
 
-    img {
-        display: table-cell;
-        vertical-align: middle;
-        height: 4em;
-        margin: 1em 1em 0em 1em;
-    }
 }
 
 

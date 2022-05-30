@@ -106,6 +106,10 @@ socket.on("state_update", (state, callback) => {
 
 })
 
+socket.on("notification", (data, callback) => {
+    show_notification(data["headline"], data["body"]);
+})
+
 function mode_change(mode) {
     socket.emit('mode_change', mode, (success) => {
         if (success) {

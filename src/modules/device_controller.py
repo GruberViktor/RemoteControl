@@ -1,11 +1,9 @@
 import RPi.GPIO as GPIO
 import json
-import adafruit_ds3502
 
 from .config import config
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(23, GPIO.IN)
+GPIO.setmode(GPIO.BCM)
 
 
 class Device:
