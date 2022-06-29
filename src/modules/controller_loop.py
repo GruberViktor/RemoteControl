@@ -50,7 +50,9 @@ def on_setting_changed(data):
     if data["value"] not in [True, False]:
         data["value"] = float(data["value"])
     cl.current_mode.settings[data["setting"]]["val"] = data["value"]
-    settings.save_current_settings(cl.current_mode.__class__.__name__, cl.current_mode.settings)
+    settings.save_current_settings(
+        cl.current_mode.__class__.__name__, cl.current_mode.settings
+    )
     # sio.emit("setting_changed", data, broadcast=True, include_self=False)
     return 200
 
@@ -117,13 +119,13 @@ class ControllerLoop(threading.Thread):
             if db_write_i > 3:
                 try:
                     koji_1_temp = sc.sensors["koji_1"]["val"]
-                    koji_2_temp = sc.sensors["koji_2"]["val"]
-                    koji_temp = (koji_1_temp + koji_2_temp) / 2
+                    # koji_2_temp = sc.sensors["koji_2"]["val"]
+                    # koji_temp = (koji_1_temp + koji_2_temp) / 2
                     data = {
-                        "koji_temp_avg": koji_temp,
+                        "koji_temp_avg": koji_1_temp,
                         # "room_temp": f"{round(, 1):.1f}",
                         "muro_temp": sc.sensors["muro_pt"]["val"],
-                        "muro_humidity": sc.sensors["humidity"]["val"],
+                        # "muro_humidity": sc.sensors["humidity"]["val"],
                         "muro_vent": 100 if dc.muro_vent.status else 0,
                         "bed_vent": 100 if dc.bed_vent.status else 0,
                         "heater": 100 if dc.heater.status else 0,

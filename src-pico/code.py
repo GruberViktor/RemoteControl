@@ -108,10 +108,13 @@ init_sensors()
 while True:
     t1 = time.monotonic()
     results = {}
-    get_temps(results)
-    get_humidity_measurements(results)
-    results["co2"] = {"val": co2_sensor.CO2, "name": "CO2", "unit": "ppm"}
-    print(results)
+    try:
+        get_temps(results)
+        get_humidity_measurements(results)
+        results["co2"] = {"val": co2_sensor.CO2, "name": "CO2", "unit": "ppm"}
+        print(results)
+    except:
+        pass
     t2 = time.monotonic()
     time_to_sleep = 1 - (t2 - t1)
     time.sleep(0 if time_to_sleep < 0 else time_to_sleep)

@@ -26,6 +26,7 @@ class SensorController:
         # self.init_ds18b20_sensors()
         self.init_serial()
         self.init_MAX31865_sensors()
+        self.init_MAX31865_humidity_sensors()
 
         self.sensors = {}
 
@@ -82,6 +83,22 @@ class SensorController:
                 ),
             }
 
+    def init_MAX31865_humidity_sensors(self):
+        self.max31865_humidity_sensors = {}
+        for id, dev in config["MAX31865_HUMIDITY_SENSORS"].items():
+            dev = eval(dev)
+            self.max31865_humidity_sensors[id] = {
+                "name": dev["name"],
+                "unit": "%",
+                "dev": adafruit_max31865.MAX31865(
+                    spi,
+                    digitalio.DigitalInOut(Pin(dev["GPIO"])),
+                    rtd_nominal=dev["rtd_nominal"],
+                    ref_resistor=dev["ref_resistor"],
+                    wires=dev["wires"],
+                ),
+            }
+
     def read_sensors(self):
         ## DS18B20 Sensors
         i = 1
@@ -129,12 +146,21 @@ class SensorController:
                     # print(datetime.datetime.now(), e)
                     # print(e.args, flush=True)
 
-        for id, dev in self.max31865_sensors.items():
-            self.sensors[id] = {
-                "name": dev["name"],
-                "val": dev["dev"].temperature,
-                "unit": dev["unit"],
-            }
+        if self.max31865_sensors:
+            for id, dev in self.max31865_sensors.items():
+                self.sensors[id] = {
+                    "name": dev["name"],
+                    "val": dev["dev"].temperature,
+                    "unit": dev["unit"],
+                }
+
+        if self.max31865_humidity_sensors:
+            for id, dev in self.max31865_humidity_sensors.items():
+                self.sensors[id] = {
+                    "name": dev["name"],
+                    "val": (dev["dev"].resistance - 100) * 2.597402597,
+                    "unit": dev["unit"],
+                }
 
     @property
     def sensor_data(self):

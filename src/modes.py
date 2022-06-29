@@ -5,7 +5,7 @@ import logging
 from modules.device_controller import dc
 from modules.sensor_controller import sc
 from modules.emails import send_email
-from modules import settings 
+from modules import settings
 
 try:
     import custom_modes
@@ -44,82 +44,84 @@ class Koji(Mode):
         settings = settings.settings[display_name]
     else:
         settings = {
-                "muro_target_temp": {
-                    "display_name": "Muro Temperatur (°C)",
-                    "visible": True,
-                    "val": 30,
-                    "min_value": 20,
-                    "max_value": 40,
-                    "step": 0.5,
-                    "type": "number",
-                },
-                "muro_target_temp_hys": {
-                    "display_name": "Muro Temperatur Hysterese (°C)",
-                    "visible": True,
-                    "val": 2,
-                    "min_value": 1,
-                    "max_value": 5,
-                    "step": 0.5,
-                    "type": "number",
-                },
-                "koji_target_temp": {
-                    "display_name": "Ziel Koji Temperatur (°C)",
-                    "visible": True,
-                    "val": 32,
-                    "min": 20,
-                    "max": 44,
-                    "step": 0.5,
-                    "type": "number",
-                },
-                "koji_max_temp": {
-                    "display_name": "Max. Koji Temperatur (°C)",
-                    "visible": True,
-                    "val": 34,
-                    "min_value": 20,
-                    "max_value": 44,
-                    "step": 0.5,
-                    "type": "number",
-                },
-                "muro_target_hum": {
-                    "display_name": "Muro Luftfeuchtigkeit (%)",
-                    "visible": True,
-                    "val": 90,
-                    "min": 0,
-                    "max": 100,
-                    "step": 1,
-                    "type": "number",
-                },
-                "muro_target_hum_hys": {
-                    "display_name": "Muro Luftfeuchtigkeit Hysterese (%)",
-                    "visible": False,
-                    "val": 3,
-                    "min": 1,
-                    "max": 8,
-                    "step": 0.5,
-                    "type": "number",
-                },
-                "heater_lock": {
-                    "display_name": "Heizung Sperre",
-                    "visible": True,
-                    "val": False,
-                    "min": None,
-                    "max": None,
-                    "step": None,
-                    "type": "checkbox",
-                },
-                "muro_vent_lock": {
-                    "display_name": "Muro Ventilator Sperre",
-                    "visible": True,
-                    "val": False,
-                    "min": None,
-                    "max": None,
-                    "step": None,
-                    "type": "checkbox",
-                },
-            }
+            "muro_target_temp": {
+                "display_name": "Muro Temperatur (°C)",
+                "visible": True,
+                "val": 30,
+                "min_value": 20,
+                "max_value": 40,
+                "step": 0.5,
+                "type": "number",
+            },
+            "muro_target_temp_hys": {
+                "display_name": "Muro Temperatur Hysterese (°C)",
+                "visible": True,
+                "val": 2,
+                "min_value": 1,
+                "max_value": 5,
+                "step": 0.5,
+                "type": "number",
+            },
+            "koji_target_temp": {
+                "display_name": "Ziel Koji Temperatur (°C)",
+                "visible": True,
+                "val": 32,
+                "min": 20,
+                "max": 44,
+                "step": 0.5,
+                "type": "number",
+            },
+            "koji_max_temp": {
+                "display_name": "Max. Koji Temperatur (°C)",
+                "visible": True,
+                "val": 34,
+                "min_value": 20,
+                "max_value": 44,
+                "step": 0.5,
+                "type": "number",
+            },
+            "muro_target_hum": {
+                "display_name": "Muro Luftfeuchtigkeit (%)",
+                "visible": True,
+                "val": 90,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "type": "number",
+            },
+            "muro_target_hum_hys": {
+                "display_name": "Muro Luftfeuchtigkeit Hysterese (%)",
+                "visible": False,
+                "val": 3,
+                "min": 1,
+                "max": 8,
+                "step": 0.5,
+                "type": "number",
+            },
+            "heater_lock": {
+                "display_name": "Heizung Sperre",
+                "visible": True,
+                "val": False,
+                "min": None,
+                "max": None,
+                "step": None,
+                "type": "checkbox",
+            },
+            "muro_vent_lock": {
+                "display_name": "Muro Ventilator Sperre",
+                "visible": True,
+                "val": False,
+                "min": None,
+                "max": None,
+                "step": None,
+                "type": "checkbox",
+            },
+        }
 
     bed_vent_just_stopped = False
     currently_cooling_muro = False
+    muro_vent_just_stopped = False
+    humidifier_cycle_count = 0
     sensor_read_error_count = 0
 
     def cycle(self):
@@ -127,21 +129,22 @@ class Koji(Mode):
         sensors = sc.sensors
 
         if self.sensor_read_error_count == 30:
-            send_email(
-                "office@luvifermente.eu",
-                "office@luvifermente.eu",
-                "Muro: Sensor Read Error",
-                "",
-            )
+            # send_email(
+            #     "office@luvifermente.eu",
+            #     "office@luvifermente.eu",
+            #     "Muro: Sensor Read Error",
+            #     "",
+            # )
             self.sensor_read_error_count = 0
             dc.turn_off_all_devices()
 
         try:
             muro_temp = sensors["muro_pt"]["val"]
-            koji_1_temp = sensors["koji_1"]["val"]
-            koji_2_temp = sensors["koji_2"]["val"]
-            koji_temp = (koji_1_temp + koji_2_temp) / 2
-            muro_humidity = sensors["humidity"]["val"]
+            koji_temp = sensors["koji_1"]["val"]
+            # koji_1_temp = sensors["koji_1"]["val"]
+            # koji_2_temp = sensors["koji_2"]["val"]
+            # koji_temp = (koji_1_temp + koji_2_temp) / 2
+            muro_humidity = sensors["muro_humidity"]["val"]
             # muro_temp_hum = sensors["temp_hum"]["val"]
 
             muro_target_temp = s["muro_target_temp"]["val"]
@@ -153,13 +156,15 @@ class Koji(Mode):
             muro_target_humidity = s["muro_target_hum"]["val"]
             muro_target_humidity_hys = s["muro_target_hum_hys"]["val"]
         except KeyError as e:
-            print(e, flush=True)
+            print(e.args, flush=True)
             self.sensor_read_error_count += 1
             return
 
-        if False in [muro_temp, koji_temp, muro_humidity]:
+        if False in [muro_temp, koji_temp]:
             self.sensor_read_error_count += 1
             return
+
+        dc.humidity_sensor_vent.turn_on()
 
         ####################
         ### Muro Heizung ###
@@ -179,7 +184,9 @@ class Koji(Mode):
             if muro_temp > muro_target_temp:
                 dc.heater.turn_off()
             elif muro_temp < muro_target_temp:
-                dc.muro_vent.turn_off()
+                if dc.muro_vent.status:
+                    dc.muro_vent.turn_off()
+                    self.muro_vent_just_stopped = True
         ### Unter Idealbande ###
         elif muro_temp <= muro_target_temp - muro_target_temp_hys:
             if not heater_lock:
@@ -201,6 +208,15 @@ class Koji(Mode):
         ########################
         ### Luftfeuchtigkeit ###
 
+        # if self.muro_vent_just_stopped:
+        #     self.muro_vent_just_stopped = False
+        #     dc.humidifier.turn_on()
+        # if dc.humidifier.status:
+        #     self.humidifier_cycle_count += 1
+        #     if self.humidifier_cycle_count == 30:
+        #         dc.humidifier.turn_off()
+        #         self.humidifier_cycle_count = 0
+
         custom_code.check_water_sensor()
         if not self.currently_cooling_muro:
             if not muro_humidity == 0:
@@ -220,9 +236,155 @@ class Koji(Mode):
             dc.humidifier.turn_off()
 
 
+class Drying(Mode):
+    display_name = "Trocknen"
+    priority = 90
+
+    if settings.settings.get(display_name):
+        settings = settings.settings[display_name]
+    else:
+        settings = {
+            "muro_target_temp": {
+                "display_name": "Muro Temperatur (°C)",
+                "visible": True,
+                "val": 30,
+                "min_value": 20,
+                "max_value": 40,
+                "step": 0.5,
+                "type": "number",
+            },
+            "muro_target_temp_hys": {
+                "display_name": "Muro Temperatur Hysterese (°C)",
+                "visible": True,
+                "val": 2,
+                "min_value": 1,
+                "max_value": 5,
+                "step": 0.5,
+                "type": "number",
+            },
+            "saturation_time": {
+                "display_name": "Sättigungszeit (min)",
+                "visible": True,
+                "val": 10,
+                "min_value": 1,
+                "max_value": 60,
+                "step": 0.5,
+                "type": "number",
+            },
+            "ventilation_time": {
+                "display_name": "Lüftungszeit (min)",
+                "visible": True,
+                "val": 2,
+                "min_value": 1,
+                "max_value": 60,
+                "step": 0.5,
+                "type": "number",
+            },
+            "sleeping_time": {
+                "display_name": "Pausenzeit (min)",
+                "visible": True,
+                "val": 10,
+                "min_value": 1,
+                "max_value": 60,
+                "step": 0.5,
+                "type": "number",
+            },
+        }
+
+    saturation_counter = 0
+    currently_saturating = False
+    ventilation_counter = 0
+    currently_ventilating = False
+    sleeping_counter = 0
+    currenty_sleeping = True
+
+    def cycle(self):
+        s = self.settings
+        sensors = sc.sensors
+
+        try:
+            muro_temp = sensors["muro_pt"]["val"]
+            koji_temp = sensors["koji_1"]["val"]
+            # koji_1_temp = sensors["koji_1"]["val"]
+            # koji_2_temp = sensors["koji_2"]["val"]
+            # koji_temp = (koji_1_temp + koji_2_temp) / 2
+            # muro_humidity = sensors["humidity"]["val"]
+            # muro_temp_hum = sensors["temp_hum"]["val"]
+
+            muro_target_temp = s["muro_target_temp"]["val"]
+            muro_target_temp_hys = s["muro_target_temp_hys"]["val"]
+            saturation_time = s["saturation_time"]["val"]
+            ventilation_time = s["ventilation_time"]["val"]
+            sleeping_time = s["sleeping_time"]["val"]
+        except KeyError as e:
+            print(e.args, flush=True)
+            self.sensor_read_error_count += 1
+            return
+
+        if False in [muro_temp, koji_temp]:
+            self.sensor_read_error_count += 1
+            return
+
+        dc.humidifier.turn_off()
+        dc.osmosis_valve.turn_off()
+        dc.dehumidifier.turn_on()
+        dc.humidity_sensor_vent.turn_on()
+
+        if muro_temp >= muro_target_temp + muro_target_temp_hys:
+            dc.heater.turn_off()
+        elif (
+            muro_target_temp - muro_target_temp_hys
+            < muro_temp
+            < muro_target_temp + muro_target_temp_hys
+        ):
+            if muro_temp > muro_target_temp:
+                dc.heater.turn_off()
+            elif muro_temp < muro_target_temp:
+                pass
+        ### Unter Idealbande ###
+        elif muro_temp <= muro_target_temp - muro_target_temp_hys:
+            dc.heater.turn_on()
+
+        if self.saturation_counter > saturation_time * 60:
+            self.currently_saturating = False
+            self.currently_ventilating = True
+            self.currenty_sleeping = False
+            self.saturation_counter = 0
+
+        if self.ventilation_counter > ventilation_time * 60:
+            self.currently_saturating = False
+            self.currently_ventilating = False
+            self.currenty_sleeping = True
+            self.ventilation_counter = 0
+
+        if self.sleeping_counter > sleeping_time * 60:
+            self.currently_saturating = True
+            self.currently_ventilating = False
+            self.currenty_sleeping = False
+            self.sleeping_counter = 0
+
+        if self.currently_saturating:
+            dc.bed_vent.turn_on()
+            dc.muro_vent.turn_off()
+            self.saturation_counter += 1
+
+        if self.currently_ventilating:
+            dc.bed_vent.turn_on()
+            dc.muro_vent.turn_on()
+            self.ventilation_counter += 1
+
+        if self.currenty_sleeping:
+            dc.muro_vent.turn_off()
+            dc.bed_vent.turn_off()
+            self.sleeping_counter += 1
+
+
 class Manual(Mode):
     display_name = "Manuell"
     priority = 100
+
+    def cycle(self):
+        dc.humidity_sensor_vent.turn_on()
 
 
 # class Drying(Mode):
